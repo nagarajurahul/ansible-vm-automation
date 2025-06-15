@@ -1,0 +1,17 @@
+- name: Apply Terraform for each VM
+  shell: |
+    terraform apply \
+      -var="vm_hostname={{ item.vm_hostname }}" \
+      -var="esxi_hostname={{ item.esxi_hostname }}" \
+      -var="esxi_username={{ item.esxi_username }}" \
+      -var="esxi_password={{ item.esxi_password }}" \
+      -var="ovf_file={{ item.ovf_file }}" \
+      -var="disk_store={{ item.disk_store }}" \
+      -var="virtual_network={{ item.virtual_network }}" \
+      -var="vm_password={{ item.vm_password }}" \
+      -var="ssh_public_key={{ item.ssh_public_key }}" \
+      -auto-approve
+  args:
+    chdir: ../esxi/
+  loop: "{{ vm_list }}"
+
