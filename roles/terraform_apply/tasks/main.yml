@@ -12,6 +12,6 @@
       -var="ssh_public_key={{ item.ssh_public_key }}" \
       -auto-approve
   args:
-    chdir: ../esxi/
+    chdir: ../terraform-vmware-esxi-single-vm/
   loop: "{{ vm_list }}"
 
