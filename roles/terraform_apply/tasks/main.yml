@@ -13,3 +13,14 @@
   args:
     chdir: ../terraform-vmware-esxi-multiple-vm/
 
+- name: Get Terraform output (Ansible inventory)
+  command: terraform output -raw ansible_inventory
+  register: tf_inventory
+  args:
+    chdir: ../terraform-vmware-esxi-multiple-vm/
+
+- name: Write Ansible inventory to file
+  copy:
+    content: "{{ tf_inventory.stdout }}"
+    dest: ./ansible_vms_inventory.ini
+
