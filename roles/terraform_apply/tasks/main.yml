@@ -1,17 +1,15 @@
-- name: Apply Terraform for each VM
-  shell: |
-    terraform apply \
-      -var="vm_hostname={{ item.vm_hostname }}" \
-      -var="esxi_hostname={{ item.esxi_hostname }}" \
-      -var="esxi_username={{ item.esxi_username }}" \
-      -var="esxi_password={{ item.esxi_password }}" \
-      -var="ovf_file={{ item.ovf_file }}" \
-      -var="disk_store={{ item.disk_store }}" \
-      -var="virtual_network={{ item.virtual_network }}" \
-      -var="vm_password={{ item.vm_password }}" \
-      -var="ssh_public_key={{ item.ssh_public_key }}" \
-      -auto-approve
+- name: Create terraform.tfvars.json from template
+  template:
+    src: tfvars.json.j2
+    dest: ../terraform-vmware-esxi-multiple-vm/terraform.tfvars.json
+
+- name: Run terraform init
+  command: terraform init
   args:
-    chdir: ../terraform-vmware-esxi-single-vm/
-  loop: "{{ vm_list }}"
+    chdir: ../terraform-vmware-esxi-multiple-vm/
+
+- name: Run terraform apply
+  command: terraform apply -auto-approve
+  args:
+    chdir: ../terraform-vmware-esxi-multiple-vm/
 
