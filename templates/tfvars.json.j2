@@ -1,0 +1,18 @@
+{
+  "vms": {
+    {% for name, vm in vms.items() %}
+    "{{ name }}": {
+      "esxi_hostname": "{{ vm.esxi_hostname }}",
+      "esxi_username": "{{ vm.esxi_username }}",
+      "esxi_password": "{{ vm.esxi_password }}",
+      "disk_store": "{{ vm.disk_store }}",
+      "virtual_network": "{{ vm.virtual_network }}",
+      "vm_hostname": "{{ vm.vm_hostname }}",
+      "vm_password": "{{ vm.vm_password }}",
+      "ovf_file": "{{ vm.ovf_file }}",
+      "ssh_public_key": "{{ vm.ssh_public_key }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  }
+}
+
