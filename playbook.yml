@@ -2,7 +2,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vars/vm_list.yml
+    - vars/vms.yml
   roles:
     - terraform_apply
 
