@@ -1,8 +1,8 @@
-- name: Run Terraform Automation for VMs
+- name: Provision all VMs via Terraform (batch)
   hosts: localhost
   gather_facts: false
   vars_files:
     - vars/vm_list.yml
-
   roles:
     - terraform_apply
+
