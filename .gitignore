@@ -1,3 +1,2 @@
-vars/vm_list.yml
-vars/vms.yml
+vars/
 ansible_vms_inventory.ini
