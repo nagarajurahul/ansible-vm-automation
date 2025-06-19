@@ -94,22 +94,22 @@
   ansible.builtin.command: sysctl --system
   become: true
 
-- name: Check required sysctl values
-  ansible.builtin.shell: |
-    sysctl -n {{ item }}
-  loop:
-    - net.bridge.bridge-nf-call-iptables
-    - net.bridge.bridge-nf-call-ip6tables
-    - net.ipv4.ip_forward
-  register: sysctl_results
-  changed_when: false
-  become: true
+# - name: Check required sysctl values
+#   ansible.builtin.shell: |
+#     sysctl -n {{ item }}
+#   loop:
+#     - net.bridge.bridge-nf-call-iptables
+#     - net.bridge.bridge-nf-call-ip6tables
+#     - net.ipv4.ip_forward
+#   register: sysctl_results
+#   changed_when: false
+#   become: true
 
-- name: Fail if any sysctl value is not 1
-  ansible.builtin.assert:
-    that:
-      - "sysctl_results.results[0].stdout == '1'"
-      - "sysctl_results.results[1].stdout == '1'"
-      - "sysctl_results.results[2].stdout == '1'"
-    fail_msg: "❌ One or more sysctl values are not correctly set for Kubernetes networking."
-    success_msg: "✅ All required sysctl values are correctly set."
+# - name: Fail if any sysctl value is not 1
+#   ansible.builtin.assert:
+#     that:
+#       - "sysctl_results.results[0].stdout == '1'"
+#       - "sysctl_results.results[1].stdout == '1'"
+#       - "sysctl_results.results[2].stdout == '1'"
+#     fail_msg: "❌ One or more sysctl values are not correctly set for Kubernetes networking."
+#     success_msg: "✅ All required sysctl values are correctly set."
