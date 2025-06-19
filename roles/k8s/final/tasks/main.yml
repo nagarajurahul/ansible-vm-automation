@@ -22,3 +22,19 @@
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /"
     state: present
   become: true
+
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+  become: true
+
+- name: Install Kubernetes components
+  ansible.builtin.package:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: yes
+  become: true
