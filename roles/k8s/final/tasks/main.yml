@@ -123,7 +123,7 @@
 - name: Configure kubectl for the control plane node
   ansible.builtin.command: /usr/local/bin/setup_kubectl.sh
   become: true
-  become_user: "{{ master_user }}"
+  become_user: ubuntu
   when: "'masters' in group_names"
 
 - name: Apply Flannel CNI plugin
