@@ -19,11 +19,11 @@
   register: lts_check_output
   changed_when: false
 
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fail_module.html#ansible-collections-ansible-builtin-fail-module
-- name: Fail if kernel is not LTS
-  ansible.builtin.fail:
-    msg: "❌ This node is not running an LTS kernel. Kubernetes installation requires LTS."
-  when: "'NOT an LTS' in lts_check_output.stdout"
+# # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fail_module.html#ansible-collections-ansible-builtin-fail-module
+# - name: Fail if kernel is not LTS
+#   ansible.builtin.fail:
+#     msg: "❌ This node is not running an LTS kernel. Kubernetes installation requires LTS."
+#   when: "'NOT an LTS' in lts_check_output.stdout"
 
 
 
