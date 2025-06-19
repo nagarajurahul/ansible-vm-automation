@@ -51,14 +51,18 @@
     mode: '0644'
   become: true    
 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/systemd_service_module.html#ansible-collections-ansible-builtin-systemd-service-module
+# Restarting the containerd service to apply the new configuration
 - name: Restart and enable(start when booted) containerd service
   ansible.builtin.systemd:
     name: containerd
     state: restarted
     enabled: true
+    daemon_reload: true
   register: containerd_status
   become: true
 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
 - name: Wait for containerd to become active
   ansible.builtin.command: systemctl is-active containerd
   register: containerd_check
@@ -67,6 +71,7 @@
   until: containerd_check.stdout == "active"
   become: true
 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/assert_module.html#ansible-collections-ansible-builtin-assert-module
 - name: Assert containerd is active and running
   ansible.builtin.assert:
     that:
