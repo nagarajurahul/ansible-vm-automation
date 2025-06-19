@@ -89,3 +89,7 @@
     mode: '0644'
     force: no
   become: true
+
+- name: Apply sysctl settings
+  ansible.builtin.command: sysctl --system
+  become: true
