@@ -102,3 +102,10 @@
   register: kubeadm_init_output
   become: true
   when: "'masters' in group_names"
+
+- name: Save join command for worker nodes
+  ansible.builtin.shell: |
+    echo "{{ kubeadm_init_output.stdout_lines | select('search', 'kubeadm join') | list | join('\n') }}" > /join-command.txt
+  args:
+    executable: /bin/bash
+  when: "'masters' in group_names"
