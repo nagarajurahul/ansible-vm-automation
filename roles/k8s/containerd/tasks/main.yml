@@ -46,4 +46,20 @@
     name: containerd
     state: restarted
     enabled: true
+  register: containerd_status
   become: true
+  
+- name: Wait for containerd to become active
+  ansible.builtin.command: systemctl is-active containerd
+  register: containerd_check
+  retries: 5
+  delay: 2
+  until: containerd_check.stdout == "active"
+  become: true
+
+- name: Assert containerd is active and running
+  ansible.builtin.assert:
+    that:
+      - containerd_check.stdout == "active"
+    fail_msg: "Containerd is not running!"
+    success_msg: "Containerd is active and running."
