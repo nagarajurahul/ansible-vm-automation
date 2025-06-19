@@ -50,7 +50,7 @@
   become: true
 
 - name: Mark Kubernetes packages to hold
-  ansible.builtin.apt_mark:
+  apt_mark:
     name:
       - kubelet
       - kubeadm
@@ -72,7 +72,7 @@
 
 
 - name: Mark Kubernetes packages to hold
-  ansible.builtin.apt_mark:
+  apt_mark:
     name:
       - kubelet
       - kubeadm
