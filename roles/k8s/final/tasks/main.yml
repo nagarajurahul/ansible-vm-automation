@@ -1,5 +1,5 @@
 ---
-- name: Install required packages for Kubernetes
+- name: Install prerequisites for kubernetes
   ansible.builtin.package:
     name: 
       - ca-certificates
@@ -9,20 +9,18 @@
     update_cache: yes
   become: true
 
-- name: Create directory for APT keyrings
+- name: Ensure /etc/apt/keyrings directory exists
   ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
-    force: no
   become: true
 
 - name: Add Kubernetes GPG key
   ansible.builtin.get_url:
-    url: https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key
+    url: "https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key"
     file: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     mode: '0644'
-    state: present
   become: true
 
 - name: Add Kubernetes repository
@@ -32,11 +30,6 @@
   become: true
 
 
-
-- name: Update APT cache
-  ansible.builtin.apt:
-    update_cache: yes
-  become: true
 
 - name: Install Kubernetes components
   ansible.builtin.package:
@@ -56,6 +49,8 @@
   when: "'masters' in group_names"
   become: true  
 
+
+
 - name: Install Kubernetes components
   ansible.builtin.package:
     name:
@@ -65,7 +60,6 @@
     update_cache: yes
   when: "'workers' in group_names"
   become: true
-
 
 - name: Mark Kubernetes packages to hold
   ansible.builtin.shell: apt-mark hold kubelet kubeadm
@@ -77,10 +71,27 @@
 - name: Enable and start kubelet service
   ansible.builtin.systemd:
     name: kubelet
-    state: started
+    state: restarted
+    daemon_reload: true
     enabled: true
   register: kubelet_status
   become: true
+
+- name: Wait for kubelet to become active
+  ansible.builtin.command: systemctl is-active kubelet
+  register: kubelet_check
+  retries: 5
+  delay: 2
+  until: kubelet_check.stdout == "active"
+  become: true
+
+- name: Assert kubelet is active and running
+  ansible.builtin.assert:
+    that:
+      - kubelet_check.stdout == "active"
+    fail_msg: "Kubelet is not running!"
+    success_msg: "Kubelet is active and running."
+
 
 
 - name: Generate kubeadm init config file from template
