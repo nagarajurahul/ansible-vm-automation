@@ -24,3 +24,22 @@
   ansible.builtin.fail:
     msg: "❌ This node is not running an LTS kernel. Kubernetes installation requires LTS."
   when: "'NOT an LTS' in lts_check_output.stdout"
+
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
+- name: Disable swap
+  ansible.builtin.shell: swapoff -a
+  become: true
+
+# sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab -> This will comment
+- name: Comment out swap lines in /etc/fstab
+  ansible.builtin.command: sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
+  become: true
+
+# # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html#ansible-collections-ansible-builtin-lineinfile-module
+# - name: Ensure swap is disabled in /etc/fstab
+#   ansible.builtin.lineinfile:
+#     path: /etc/fstab
+#     regexp: '^([^#].*\sswap\s.*)$'
+#     state: absent
+#   become: true
