@@ -31,12 +31,16 @@
   ansible.builtin.shell: swapoff -a
   become: true
 
-# sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab -> This will comment
+# sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
+# This will comment
 - name: Comment out swap lines in /etc/fstab
   ansible.builtin.command: sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
   become: true
 
 # # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html#ansible-collections-ansible-builtin-lineinfile-module
+# # This will remove the swap line from /etc/fstab
+# # Note: This is optional, as commenting out the line is sufficient for disabling swap.
+# # Uncomment the following task if you want to ensure swap is completely removed from /etc/f
 # - name: Ensure swap is disabled in /etc/fstab
 #   ansible.builtin.lineinfile:
 #     path: /etc/fstab
