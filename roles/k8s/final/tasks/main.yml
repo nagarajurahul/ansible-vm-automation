@@ -125,3 +125,10 @@
   become: true
   become_user: "{{ master_user }}"
   when: "'masters' in group_names"
+
+- name: Apply Flannel CNI plugin
+  ansible.builtin.command: >
+    kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+  become: true
+  become_user: ubuntu
+  when: "'masters' in group_names"
