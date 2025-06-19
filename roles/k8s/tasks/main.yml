@@ -1,5 +1,5 @@
 ---
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html#ansible-collections-ansible-builtin-package-module
 - name: Install jq
   ansible.builtin.package:
     name: jq
@@ -19,6 +19,7 @@
   register: lts_check_output
   changed_when: false
 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fail_module.html#ansible-collections-ansible-builtin-fail-module
 - name: Fail if kernel is not LTS
   ansible.builtin.fail:
     msg: "❌ This node is not running an LTS kernel. Kubernetes installation requires LTS."
