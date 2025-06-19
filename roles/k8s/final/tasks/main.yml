@@ -64,7 +64,6 @@
     name:
       - kubelet
       - kubeadm
-      - kubectl
     state: present
     update_cache: yes
   when: "'workers' in group_names"
@@ -76,7 +75,6 @@
     name:
       - kubelet
       - kubeadm
-      - kubectl
     state: hold
   when: "'workers' in group_names"
   become: true  
