@@ -37,17 +37,39 @@
       - kubectl
     state: present
     update_cache: yes
+  when: "'masters' in group_names"
   become: true
 
-  - name: Mark Kubernetes packages to hold
+- name: Mark Kubernetes packages to hold
   ansible.builtin.apt_mark:
     name:
       - kubelet
       - kubeadm
       - kubectl
     state: hold
+  when: "'masters' in group_names"
   become: true  
 
+- name: Install Kubernetes components
+  ansible.builtin.package:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: yes
+  when: "'workers' in group_names"
+  become: true
+
+- name: Mark Kubernetes packages to hold
+  ansible.builtin.apt_mark:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: hold
+  when: "'workers' in group_names"
+  become: true  
 - name: Enable and start kubelet service
   ansible.builtin.systemd:
     name: kubelet
