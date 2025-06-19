@@ -29,7 +29,7 @@
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
 - name: Disable swap
-  ansible.builtin.shell: swapoff -a
+  ansible.builtin.command: swapoff -a
   become: true
 
 # sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
