@@ -1,0 +1,24 @@
+---
+- name: Install required packages for Kubernetes
+  ansible.builtin.package:
+    name: 
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Add Kubernetes GPG key
+  ansible.builtin.apt_key:
+    url: https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    mode: '0644'
+    state: present
+  become: true
+
+- name: Add Kubernetes repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /"
+    state: present
+  become: true
