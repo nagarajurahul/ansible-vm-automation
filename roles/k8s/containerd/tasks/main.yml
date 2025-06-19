@@ -12,7 +12,7 @@
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_key_module.html#ansible-collections-ansible-builtin-apt-key-module
 - name: Add containerd GPG key
   ansible.builtin.apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
+    url: "https://download.docker.com/linux/ubuntu/gpg"
     dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
     state: present
@@ -48,7 +48,7 @@
     enabled: true
   register: containerd_status
   become: true
-  
+
 - name: Wait for containerd to become active
   ansible.builtin.command: systemctl is-active containerd
   register: containerd_check
