@@ -9,11 +9,18 @@
     update_cache: yes
   become: true
 
+- name: Ensure /etc/apt/keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_key_module.html#ansible-collections-ansible-builtin-apt-key-module
 - name: Add containerd GPG key
-  ansible.builtin.apt_key:
+  ansible.builtin.get_url:
     url: "https://download.docker.com/linux/ubuntu/gpg"
-    file: /etc/apt/keyrings/docker.asc
+    dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
     state: present
   become: true
