@@ -1,0 +1,18 @@
+---
+- name: Common OS Configuration (kernel checks, modules, etc.)
+  hosts: all
+  become: true
+  roles:
+    - k8s/common
+
+- name: Install and Configure Container Runtime (containerd)
+  hosts: all
+  become: true
+  roles:
+    - k8s/containerd
+
+- name: Final Kubernetes Init & Node Join Setup
+  hosts: all
+  become: true
+  roles:
+    - k8s/final
