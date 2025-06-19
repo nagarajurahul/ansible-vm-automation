@@ -147,3 +147,9 @@
   become: true
   when: "'masters' in group_names"
   run_once: true  # Only fetch once even if multiple masters
+
+
+- name: Join worker nodes to Kubernetes cluster
+  ansible.builtin.shell: "{{ hostvars[groups['masters'][0]].join_cmd.stdout }} --ignore-preflight-errors=all"
+  become: true
+  when: "'workers' in group_names"
