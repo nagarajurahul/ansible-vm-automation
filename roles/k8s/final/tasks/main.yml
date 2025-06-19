@@ -50,12 +50,9 @@
   become: true
 
 - name: Mark Kubernetes packages to hold
-  apt_mark:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    state: hold
+  ansible.builtin.shell: apt-mark hold kubelet kubeadm kubectl
+  args:
+    warn: false
   when: "'masters' in group_names"
   become: true  
 
@@ -71,11 +68,9 @@
 
 
 - name: Mark Kubernetes packages to hold
-  apt_mark:
-    name:
-      - kubelet
-      - kubeadm
-    state: hold
+  ansible.builtin.shell: apt-mark hold kubelet kubeadm
+  args:
+    warn: false
   when: "'workers' in group_names"
   become: true  
 
