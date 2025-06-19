@@ -153,3 +153,14 @@
   ansible.builtin.shell: "{{ hostvars[groups['masters'][0]].join_cmd.stdout }} --ignore-preflight-errors=all"
   become: true
   when: "'workers' in group_names"
+
+- name: Wait for workers to be Ready
+  ansible.builtin.command: >
+    kubectl get nodes --no-headers | grep -c ' Ready'
+  register: ready_nodes
+  retries: 10
+  delay: 15
+  until: ready_nodes.stdout|int >= {{ groups['workers'] | length }}
+  become: true
+  become_user: ubuntu
+  when: "'masters' in group_names"
