@@ -13,7 +13,7 @@
 - name: Add containerd GPG key
   ansible.builtin.apt_key:
     url: "https://download.docker.com/linux/ubuntu/gpg"
-    dest: /etc/apt/keyrings/docker.asc
+    file: /etc/apt/keyrings/docker.asc
     mode: '0644'
     state: present
   become: true

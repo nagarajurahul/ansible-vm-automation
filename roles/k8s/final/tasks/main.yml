@@ -20,7 +20,7 @@
 - name: Add Kubernetes GPG key
   ansible.builtin.apt_key:
     url: https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key
-    dest: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    file: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     mode: '0644'
     state: present
   become: true
