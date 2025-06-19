@@ -16,13 +16,11 @@
     mode: '0755'
   become: true
 
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_key_module.html#ansible-collections-ansible-builtin-apt-key-module
-- name: Add containerd GPG key
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module- name: Add containerd GPG key
   ansible.builtin.get_url:
     url: "https://download.docker.com/linux/ubuntu/gpg"
     dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
-    state: present
   become: true
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_repository_module.html#ansible-collections-ansible-builtin-apt-repository-module
