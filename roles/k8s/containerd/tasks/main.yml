@@ -24,3 +24,10 @@
     repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable
     state: present
   become: true
+
+- name: Install containerd
+  ansible.builtin.package:
+    name: containerd.io
+    state: present
+    update_cache: yes
+  become: true
