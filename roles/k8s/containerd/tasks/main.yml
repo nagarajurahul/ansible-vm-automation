@@ -15,3 +15,10 @@
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
   become: true
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_repository_module.html#ansible-collections-ansible-builtin-apt-repository-module
+- name: Add containerd repository
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable
+    state: present
+  become: true
