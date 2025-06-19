@@ -9,6 +9,14 @@
     update_cache: yes
   become: true
 
+- name: Create directory for APT keyrings
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+    force: no
+  become: true
+
 - name: Add Kubernetes GPG key
   ansible.builtin.apt_key:
     url: https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key
@@ -22,6 +30,7 @@
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /"
     state: present
   become: true
+
 
 
 - name: Update APT cache
@@ -61,6 +70,7 @@
   when: "'workers' in group_names"
   become: true
 
+
 - name: Mark Kubernetes packages to hold
   ansible.builtin.apt_mark:
     name:
@@ -70,6 +80,7 @@
     state: hold
   when: "'workers' in group_names"
   become: true  
+
 - name: Enable and start kubelet service
   ansible.builtin.systemd:
     name: kubelet
