@@ -63,6 +63,20 @@
 #   register: sysctl_output
 #   become: true
 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html#ansible-collections-ansible-builtin-template-module
+# This task uses a Jinja2 template to create the sysctl configuration file.
+# Uncomment the following task if you want to use a template for sysctl parameters.
+# Make sure to create a template file named k8s.conf.j2 in the templates directory
+# of your role.
+# - name: Set Kubernetes sysctl parameters (using template)
+#   ansible.builtin.template:
+#     src: k8s.conf.j2
+#     dest: /etc/sysctl.d/k8s.conf
+#     owner: root
+#     group: root
+#     mode: '0644'
+#   become: true
+
 - name: Set Kubernetes sysctl parameters (using copy only if it doesn't exist)
   ansible.builtin.copy:
     dest: /etc/sysctl.d/k8s.conf
