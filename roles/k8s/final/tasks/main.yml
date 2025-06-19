@@ -47,3 +47,11 @@
       - kubectl
     state: hold
   become: true  
+
+- name: Enable and start kubelet service
+  ansible.builtin.systemd:
+    name: kubelet
+    state: started
+    enabled: true
+  register: kubelet_status
+  become: true
