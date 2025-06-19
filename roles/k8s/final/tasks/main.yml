@@ -109,3 +109,19 @@
   args:
     executable: /bin/bash
   when: "'masters' in group_names"
+
+- name: Copy kubeconfig setup script to control plane node
+  ansible.builtin.copy:
+    src: files/setup_kubectl.sh
+    dest: /usr/local/bin/setup_kubectl.sh
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+  when: "'masters' in group_names"
+
+- name: Configure kubectl for the control plane node
+  ansible.builtin.command: /usr/local/bin/setup_kubectl.sh
+  become: true
+  become_user: "{{ master_user }}"
+  when: "'masters' in group_names"
