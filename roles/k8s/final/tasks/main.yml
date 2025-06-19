@@ -139,3 +139,11 @@
   become: true
   become_user: ubuntu
   when: "'masters' in group_names"
+
+
+- name: Get kubeadm join command from master
+  ansible.builtin.command: kubeadm token create --print-join-command
+  register: join_cmd
+  become: true
+  when: "'masters' in group_names"
+  run_once: true  # Only fetch once even if multiple masters
