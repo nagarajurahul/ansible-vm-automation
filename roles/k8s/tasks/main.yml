@@ -1,5 +1,23 @@
 ---
-name: Install jq
-ansible.builtin.package:
-  name: jq
-  state: present
+- name: Install jq
+  ansible.builtin.package:
+    name: jq
+    state: present
+  become: true
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html#ansible-collections-ansible-builtin-copy-module
+- name: Copy LTS kernel checker script to node
+  ansible.builtin.copy:
+    src: files/check_kernel_lts.sh
+    dest: /usr/local/bin/check_kernel_lts.sh
+    mode: '0755'
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html#ansible-collections-ansible-builtin-shell-module
+- name: Run LTS kernel checker script
+  ansible.builtin.shell: /usr/local/bin/check_kernel_lts.sh
+  register: lts_check_output
+  changed_when: false
+
+- name: Fail if kernel is not LTS
+  ansible.builtin.fail:
+    msg: "❌ This node is not running an LTS kernel. Kubernetes installation requires LTS."
+  when: "'NOT an LTS' in lts_check_output.stdout"
