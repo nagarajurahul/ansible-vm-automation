@@ -9,6 +9,7 @@
     update_cache: yes
   become: true
 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module
 - name: Ensure /etc/apt/keyrings directory exists
   ansible.builtin.file:
     path: /etc/apt/keyrings
@@ -17,6 +18,7 @@
   become: true
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module- name: Add containerd GPG key
+- name: Add Docker GPG key
   ansible.builtin.get_url:
     url: "https://download.docker.com/linux/ubuntu/gpg"
     dest: /etc/apt/keyrings/docker.asc
