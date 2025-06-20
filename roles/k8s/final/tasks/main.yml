@@ -1,211 +1,67 @@
 ---
-- name: Install prerequisites for kubernetes
-  ansible.builtin.package:
-    name: 
-      - ca-certificates
-      - curl
-      - gnupg
-    state: present
-    update_cache: yes
-  become: true
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "{{ control_plane_ip }}"
+  bindPort: 6443
+nodeRegistration:
+  name: "{{ inventory_hostname }}"
+  kubeletExtraArgs:
+    cloud-provider: external
+    node-labels: node-role.kubernetes.io/control-plane=
+    authentication-token-webhook: "true"
 
-- name: Ensure /etc/apt/keyrings directory exists
-  ansible.builtin.file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
-  become: true
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+kubernetesVersion: stable
+controlPlaneEndpoint: "{{ control_plane_ip }}:6443"
+apiServer:
+  extraArgs:
+    - "--enable-admission-plugins=NodeRestriction,NamespaceLifecycle,ServiceAccount,DefaultStorageClass,ResourceQuota"
+    - "--audit-log-path=/var/log/kubernetes/audit.log"
+    - "--audit-log-maxage=30"
+    - "--audit-log-maxbackup=10"
+    - "--audit-log-maxsize=100"
+    - "--feature-gates=AllAlpha=false"
+  timeoutForControlPlane: 4m0s
 
-- name: Add Kubernetes GPG key
-  ansible.builtin.get_url:
-    url: "https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key"
-    dest: /etc/apt/keyrings/kubernetes.asc
-    mode: '0644'
-  become: true
+controllerManager:
+  extraArgs:
+    - "--node-cidr-mask-size=24"
+    - "--bind-address=0.0.0.0"
+    - "--configure-cloud-routes=false"
 
-- name: Convert Kubernetes GPG key to ASCII armored format
-  ansible.builtin.command: >
-    gpg --batch --yes --dearmor
-    -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-    /etc/apt/keyrings/kubernetes.asc
-  become: true
+scheduler:
+  extraArgs:
+    - "--leader-elect=true"
+    - "--bind-address=0.0.0.0"
 
-- name: Add Kubernetes repository
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /"
-    state: present
-  become: true
+networking:
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+  dnsDomain: cluster.local
 
+etcd:
+  local:
+    dataDir: /var/lib/etcd
 
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
+syncFrequency: "1m"
+resolvConf: /run/systemd/resolve/resolv.conf
+staticPodPath: /etc/kubernetes/manifests
+failSwapOn: true
+readOnlyPort: 0
 
-- name: Install Kubernetes components (control plane)
-  ansible.builtin.package:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    state: present
-    update_cache: yes
-  when: "'masters' in group_names"
-  become: true
-
-- name: Mark Kubernetes packages to hold (control plane)
-  # ansible.builtin.shell: apt-mark hold kubelet kubeadm kubectl
-  # args:
-  #   warn: false
-  ansible.builtin.apt:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    allow_change_held_packages: false
-  when: "'masters' in group_names"
-  become: true  
-
-
-- name: Install Kubernetes components (worker nodes)
-  ansible.builtin.package:
-    name:
-      - kubelet
-      - kubeadm
-    state: present
-    update_cache: yes
-  when: "'workers' in group_names"
-  become: true
-
-- name: Mark Kubernetes packages to hold (worker nodes)
-  # ansible.builtin.shell: apt-mark hold kubelet kubeadm
-  # args:
-  #   warn: false
-  ansible.builtin.apt:
-    name:
-      - kubelet
-      - kubeadm
-    allow_change_held_packages: false
-  when: "'workers' in group_names"
-  become: true  
-
-
-
-- name: Set control plane IP dynamically
-  ansible.builtin.set_fact:
-    control_plane_ip: "{{ ansible_host }}"
-  when: "'masters' in group_names"
-
-
-
-- name: Enable and start kubelet service
-  ansible.builtin.systemd:
-    name: kubelet
-    state: restarted
-    daemon_reload: true
-    enabled: true
-  register: kubelet_status
-  become: true
-
-
-- name: Generate kubeadm init config file from template
-  ansible.builtin.template:
-    src: kubeadm-config.yaml.j2
-    dest: /tmp/kubeadm-config.yaml
-  when: "'masters' in group_names"
-  become: true  
-
-- name: Initialize Kubernetes control-plane with kubeadm config
-  ansible.builtin.command: kubeadm init --config=/tmp/kubeadm-config.yaml
-  register: kubeadm_init_output
-  when: "'masters' in group_names"
-  become: true
-
-- name: Save join command for worker nodes
-  ansible.builtin.shell: |
-    echo "{{ kubeadm_init_output.stdout_lines | select('search', 'kubeadm join') | list | join('\n') }}" > /join-command.txt
-  args:
-    executable: /bin/bash
-  when: "'masters' in group_names"
-
-- name: Copy kubeconfig setup script to control plane node
-  ansible.builtin.copy:
-    src: files/setup_kubectl.sh
-    dest: /usr/local/bin/setup_kubectl.sh
-    owner: root
-    group: root
-    mode: '0755'
-  when: "'masters' in group_names"
-  become: true
-
-# If this file already exists, skip the task
-- name: Configure kubectl for the control plane node
-  ansible.builtin.command: /usr/local/bin/setup_kubectl.sh
-  args:
-    creates: /home/ubuntu/.kube/config
-  when: "'masters' in group_names"
-  become: true
-  become_user: ubuntu
-
-# If this file already exists, skip the task
-- name: Apply Flannel CNI plugin
-  ansible.builtin.command: >
-    kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
-  args:
-    creates: /etc/cni/net.d/10-flannel.conflist
-  when: "'masters' in group_names"
-  become: true
-  become_user: ubuntu
-
-- name: Wait for all system pods to be Ready
-  ansible.builtin.command: >
-    kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
-  environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
-  when: "'masters' in group_names"
-  become: true
-  become_user: ubuntu
-
-
-
-- name: Get kubeadm join command from master
-  ansible.builtin.command: kubeadm token create --print-join-command
-  register: join_cmd
-  when: "'masters' in group_names"
-  run_once: true  # Only fetch once even if multiple masters
-  become: true
-
-
-- name: Join worker nodes to Kubernetes cluster
-  ansible.builtin.shell: "{{ hostvars[groups['masters'][0]].join_cmd.stdout }}"
-  args:
-    creates: /etc/kubernetes/kubelet.conf
-  when: "'workers' in group_names"
-  become: true
-
-- name: Wait for workers to be Ready
-  ansible.builtin.command: >
-    kubectl get nodes --no-headers | grep -c ' Ready'
-  environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
-  register: ready_nodes
-  retries: 10
-  delay: 15
-  until: ready_nodes.stdout|int >= {{ groups['workers'] | length }}
-  when: "'masters' in group_names"
-  become: true
-  become_user: ubuntu
-
-
-
-- name: Wait for kubelet to become active
-  ansible.builtin.command: systemctl is-active kubelet
-  register: kubelet_check
-  retries: 5
-  delay: 2
-  until: kubelet_check.stdout == "active"
-  become: true
-
-- name: Assert kubelet is active and running
-  ansible.builtin.assert:
-    that:
-      - kubelet_check.stdout == "active"
-    fail_msg: "Kubelet is not running!"
-    success_msg: "Kubelet is active and running."
-
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: ipvs
+conntrack:
+  maxPerCore: 32768
+  min: 131072
+  tcpCloseWaitTimeout: 1h
+  tcpEstablishedTimeout: 24h
