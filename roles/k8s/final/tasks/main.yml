@@ -97,22 +97,6 @@
   register: kubelet_status
   become: true
 
-- name: Wait for kubelet to become active
-  ansible.builtin.command: systemctl is-active kubelet
-  register: kubelet_check
-  retries: 5
-  delay: 2
-  until: kubelet_check.stdout == "active"
-  become: true
-
-- name: Assert kubelet is active and running
-  ansible.builtin.assert:
-    that:
-      - kubelet_check.stdout == "active"
-    fail_msg: "Kubelet is not running!"
-    success_msg: "Kubelet is active and running."
-
-
 
 - name: Generate kubeadm init config file from template
   ansible.builtin.template:
@@ -201,3 +185,21 @@
   when: "'masters' in group_names"
   become: true
   become_user: ubuntu
+
+
+
+- name: Wait for kubelet to become active
+  ansible.builtin.command: systemctl is-active kubelet
+  register: kubelet_check
+  retries: 5
+  delay: 2
+  until: kubelet_check.stdout == "active"
+  become: true
+
+- name: Assert kubelet is active and running
+  ansible.builtin.assert:
+    that:
+      - kubelet_check.stdout == "active"
+    fail_msg: "Kubelet is not running!"
+    success_msg: "Kubelet is active and running."
+
