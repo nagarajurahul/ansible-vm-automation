@@ -100,7 +100,7 @@
 
 - name: Generate kubeadm init config file from template
   ansible.builtin.template:
-    src: templates/kubeadm-config.yaml.j2
+    src: kubeadm-config.yaml.j2
     dest: /tmp/kubeadm-config.yaml
   when: "'masters' in group_names"
   become: true  
