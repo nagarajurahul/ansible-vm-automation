@@ -23,6 +23,12 @@
     mode: '0644'
   become: true
 
+- name: Convert Kubernetes GPG key to ASCII armored format
+  ansible.builtin.command: gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  args:
+    warn: false
+  become: true
+
 - name: Add Kubernetes repository
   ansible.builtin.apt_repository:
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /"
