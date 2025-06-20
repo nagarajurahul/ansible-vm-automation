@@ -118,11 +118,18 @@
   become: true
 
 - name: Save join command for worker nodes
-  ansible.builtin.shell: |
-    echo "{{ kubeadm_init_output.stdout_lines | select('search', 'kubeadm join') | list | join('\n') }}" > /join-command.txt
-  args:
-    executable: /bin/bash
+  ansible.builtin.copy:
+    dest: /join-command.txt
+    content: |
+      {% for line in kubeadm_init_output.stdout_lines %}
+      {% if 'kubeadm join' in line %}
+      {{ line }}
+      {% endif %}
+      {% endfor %}
+    mode: '0644'
   when: "'masters' in group_names"
+  become: true
+
 
 - name: Copy kubeconfig setup script to control plane node
   ansible.builtin.copy:
