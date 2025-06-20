@@ -9,8 +9,6 @@ nodeRegistration:
   kubeletExtraArgs:
     - name: cloud-provider
       value: external
-    - name: node-labels
-      value: node-role.kubernetes.io/control-plane=
     - name: authentication-token-webhook
       value: "true"
 
