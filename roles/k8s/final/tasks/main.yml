@@ -187,8 +187,8 @@
   become: true
 
 - name: Wait for workers to be Ready
-  ansible.builtin.command: >
-    kubectl get nodes --no-headers | grep -c ' Ready'
+  ansible.builtin.shell: |
+    kubectl get nodes --no-headers | grep -v 'control-plane' | grep -c 'Ready'
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
   register: ready_nodes
