@@ -77,6 +77,24 @@
 #     mode: '0644'
 #   become: true
 
+
+
+- name: Load br_netfilter kernel module
+  ansible.builtin.command: modprobe br_netfilter
+  args:
+    warn: false
+  become: true
+
+- name: Ensure br_netfilter is loaded on every boot
+  ansible.builtin.lineinfile:
+    path: /etc/modules-load.d/k8s.conf
+    line: br_netfilter
+    create: true
+    mode: '0644'
+  become: true
+
+
+
 - name: Set Kubernetes sysctl parameters (using copy only if it doesn't exist)
   ansible.builtin.copy:
     dest: /etc/sysctl.d/k8s.conf
