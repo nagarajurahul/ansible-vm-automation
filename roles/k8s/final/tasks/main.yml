@@ -147,7 +147,7 @@
   args:
     creates: /home/ubuntu/.kube/config
   when: "'masters' in group_names"
-  become: true
+  become: false
   become_user: ubuntu
 
 # If this file already exists, skip the task
