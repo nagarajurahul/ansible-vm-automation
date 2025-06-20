@@ -43,12 +43,17 @@
   become: true
 
 - name: Mark Kubernetes packages to hold
-  ansible.builtin.shell: apt-mark hold kubelet kubeadm kubectl
-  args:
-    warn: false
+  # ansible.builtin.shell: apt-mark hold kubelet kubeadm kubectl
+  # args:
+  #   warn: false
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    allow_change_held_packages: false
   when: "'masters' in group_names"
   become: true  
-
 
 
 - name: Install Kubernetes components
@@ -62,11 +67,19 @@
   become: true
 
 - name: Mark Kubernetes packages to hold
-  ansible.builtin.shell: apt-mark hold kubelet kubeadm
-  args:
-    warn: false
+  # ansible.builtin.shell: apt-mark hold kubelet kubeadm
+  # args:
+  #   warn: false
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    allow_change_held_packages: false
   when: "'workers' in group_names"
   become: true  
+
+
 
 - name: Enable and start kubelet service
   ansible.builtin.systemd:
@@ -98,14 +111,14 @@
   ansible.builtin.template:
     src: templates/kubeadm-config.yaml.j2
     dest: /tmp/kubeadm-config.yaml
-  become: true
   when: "'masters' in group_names"
+  become: true  
 
 - name: Initialize Kubernetes control-plane with kubeadm config
   ansible.builtin.command: kubeadm init --config=/tmp/kubeadm-config.yaml
   register: kubeadm_init_output
-  become: true
   when: "'masters' in group_names"
+  become: true
 
 - name: Save join command for worker nodes
   ansible.builtin.shell: |
