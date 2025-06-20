@@ -38,7 +38,7 @@
 
 
 
-- name: Install Kubernetes components
+- name: Install Kubernetes components (control plane)
   ansible.builtin.package:
     name:
       - kubelet
@@ -49,7 +49,7 @@
   when: "'masters' in group_names"
   become: true
 
-- name: Mark Kubernetes packages to hold
+- name: Mark Kubernetes packages to hold (control plane)
   # ansible.builtin.shell: apt-mark hold kubelet kubeadm kubectl
   # args:
   #   warn: false
@@ -63,7 +63,7 @@
   become: true  
 
 
-- name: Install Kubernetes components
+- name: Install Kubernetes components (worker nodes)
   ansible.builtin.package:
     name:
       - kubelet
@@ -73,7 +73,7 @@
   when: "'workers' in group_names"
   become: true
 
-- name: Mark Kubernetes packages to hold
+- name: Mark Kubernetes packages to hold (worker nodes)
   # ansible.builtin.shell: apt-mark hold kubelet kubeadm
   # args:
   #   warn: false
@@ -81,7 +81,6 @@
     name:
       - kubelet
       - kubeadm
-      - kubectl
     allow_change_held_packages: false
   when: "'workers' in group_names"
   become: true  
