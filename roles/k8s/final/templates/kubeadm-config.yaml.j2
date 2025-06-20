@@ -1,7 +1,7 @@
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: "{{ control_plane_ip: }}"
+  advertiseAddress: "{{ control_plane_ip }}"
   bindPort: 6443
 nodeRegistration:
   name: "{{ inventory_hostname }}"

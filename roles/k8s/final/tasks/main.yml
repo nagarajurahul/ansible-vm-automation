@@ -88,6 +88,13 @@
 
 
 
+- name: Set control plane IP dynamically
+  ansible.builtin.set_fact:
+    control_plane_ip: "{{ ansible_host }}"
+  when: "'masters' in group_names"
+
+
+
 - name: Enable and start kubelet service
   ansible.builtin.systemd:
     name: kubelet
