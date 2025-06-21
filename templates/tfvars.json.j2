@@ -16,10 +16,10 @@
 	  "password": "{{ user.password }}",
 	  "ssh_keys": [
             {% for key in user.ssh_keys %}
-		"{{ key }}",
+		"{{ key }}"{% if not loop.last %},{% endif %}
             {% endfor %}
           ]
-	}
+	}{% if not loop.last %},{% endif %}
       {% endfor %}
     }{% if not loop.last %},{% endif %}
     {% endfor %}
