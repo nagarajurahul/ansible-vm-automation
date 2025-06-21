@@ -81,8 +81,6 @@
 
 - name: Load br_netfilter kernel module
   ansible.builtin.command: modprobe br_netfilter
-  args:
-    warn: false
   become: true
 
 - name: Ensure br_netfilter is loaded on every boot
