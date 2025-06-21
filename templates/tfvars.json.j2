@@ -11,6 +11,7 @@
       "vm_password": "{{ vm.vm_password }}",
       "ovf_file": "{{ vm.ovf_file }}",
       "default_user": "{{ vm.default_user }}",
+      "users": {
       {% for username, user in vm.users.items() %}
      	"{{ username }}": {
 	  "password": "{{ user.password }}",
@@ -21,6 +22,7 @@
           ]
 	}{% if not loop.last %},{% endif %}
       {% endfor %}
+     }
     }{% if not loop.last %},{% endif %}
     {% endfor %}
   }
