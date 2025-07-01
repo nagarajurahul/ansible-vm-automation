@@ -4,7 +4,6 @@
   ansible.builtin.package:
     name: jq
     state: present
-  become: true
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html#ansible-collections-ansible-builtin-copy-module
 - name: Copy LTS kernel checker script to node
@@ -13,9 +12,9 @@
     dest: /usr/local/bin/check_kernel_lts.sh
     mode: '0755'
 
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html#ansible-collections-ansible-builtin-shell-module
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html#ansible-collections-ansible-builtin-command-module
 - name: Run LTS kernel checker script
-  ansible.builtin.shell: /usr/local/bin/check_kernel_lts.sh
+  ansible.builtin.command: /usr/local/bin/check_kernel_lts.sh
   register: lts_check_output
   changed_when: false
 
@@ -30,13 +29,11 @@
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
 - name: Disable swap
   ansible.builtin.command: swapoff -a
-  become: true
 
 # sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
 # This will comment
 - name: Comment out swap lines in /etc/fstab
-  ansible.builtin.command: sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
-  become: true
+  ansible.builtin.shell:   sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
 
 # # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html#ansible-collections-ansible-builtin-lineinfile-module
 # # This will remove the swap line from /etc/fstab
@@ -50,10 +47,9 @@
 #   become: true
 
 
-
-# - name: Set Kubernetes sysctl parameters (using shell)
 #   # This task uses a heredoc to write the sysctl parameters directly to the file
 #   # This is an alternative to using the copy module.
+# - name: Set Kubernetes sysctl parameters (using shell)
 #   ansible.builtin.shell: |
 #     cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 # net.bridge.bridge-nf-call-iptables  = 1
@@ -62,6 +58,8 @@
 # EOF
 #   register: sysctl_output
 #   become: true
+
+
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html#ansible-collections-ansible-builtin-template-module
 # This task uses a Jinja2 template to create the sysctl configuration file.
@@ -81,7 +79,6 @@
 
 - name: Load br_netfilter kernel module
   ansible.builtin.command: modprobe br_netfilter
-  become: true
 
 - name: Ensure br_netfilter is loaded on every boot
   ansible.builtin.lineinfile:
@@ -89,7 +86,6 @@
     line: br_netfilter
     create: true
     mode: '0644'
-  become: true
 
 
 
@@ -104,11 +100,9 @@
     group: root
     mode: '0644'
     force: no
-  become: true
 
 - name: Apply sysctl settings
   ansible.builtin.command: sysctl --system
-  become: true
 
 # - name: Check required sysctl values
 #   ansible.builtin.shell: |
