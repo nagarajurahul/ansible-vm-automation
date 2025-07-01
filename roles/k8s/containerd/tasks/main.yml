@@ -1,5 +1,5 @@
 ---
-- name: Install prerequisites for containerd
+- name: Install pre-requisites for containerd
   ansible.builtin.package:
     name: 
     - ca-certificates
@@ -7,7 +7,6 @@
     - gnupg
     state: present
     update_cache: yes
-  become: true
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module
 - name: Ensure /etc/apt/keyrings directory exists
@@ -15,22 +14,20 @@
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
-  become: true
 
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module- name: Add containerd GPG key
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module
 - name: Add Docker GPG key
   ansible.builtin.get_url:
     url: "https://download.docker.com/linux/ubuntu/gpg"
     dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
-  become: true
 
+# Specific to Ubuntu, this task adds the Docker repository for containerd.
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_repository_module.html#ansible-collections-ansible-builtin-apt-repository-module
 - name: Add containerd repository
   ansible.builtin.apt_repository:
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     state: present
-  become: true
 
 
 
@@ -39,7 +36,6 @@
     name: containerd.io
     state: present
     update_cache: yes
-  become: true
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html#ansible-collections-ansible-builtin-copy-module
 - name: Create containerd configuration file
@@ -49,8 +45,7 @@
     owner: root
     group: root
     mode: '0644'
-    backup: yes
-  become: true    
+    backup: yes    
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/systemd_service_module.html#ansible-collections-ansible-builtin-systemd-service-module
 # Restarting the containerd service to apply the new configuration
@@ -61,7 +56,6 @@
     enabled: true
     daemon_reload: true
   register: containerd_status
-  become: true
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
 - name: Wait for containerd to become active
@@ -70,7 +64,6 @@
   retries: 5
   delay: 2
   until: containerd_check.stdout == "active"
-  become: true
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/assert_module.html#ansible-collections-ansible-builtin-assert-module
 - name: Assert containerd is active and running
