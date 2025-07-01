@@ -8,6 +8,7 @@
     state: present
     update_cache: yes
 
+# Specific to Ubuntu
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module
 - name: Ensure /etc/apt/keyrings directory exists
   ansible.builtin.file:
@@ -15,6 +16,7 @@
     state: directory
     mode: '0755'
 
+# Specific to Ubuntu
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module
 - name: Add Docker GPG key
   ansible.builtin.get_url:
@@ -22,7 +24,7 @@
     dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
 
-# Specific to Ubuntu, this task adds the Docker repository for containerd.
+# Specific to Ubuntu
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_repository_module.html#ansible-collections-ansible-builtin-apt-repository-module
 - name: Add containerd repository
   ansible.builtin.apt_repository:
