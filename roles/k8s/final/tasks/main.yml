@@ -1,0 +1,211 @@
+---
+- name: Install prerequisites for kubernetes
+  ansible.builtin.package:
+    name: 
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: yes
+
+# Specific to Ubuntu
+- name: Ensure /etc/apt/keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+# Specific to Ubuntu
+- name: Add Kubernetes GPG key
+  ansible.builtin.get_url:
+    url: "https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key"
+    dest: /etc/apt/keyrings/kubernetes.asc
+    mode: '0644'
+
+# Specific to Ubuntu
+- name: Convert Kubernetes GPG key to ASCII armored format
+  ansible.builtin.command: >
+    gpg --batch --yes --dearmor
+    -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    /etc/apt/keyrings/kubernetes.asc
+
+# Specific to Ubuntu
+- name: Add Kubernetes repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /"
+    state: present
+
+
+
+# Master nodes
+
+- name: Install Kubernetes components (control plane)
+  ansible.builtin.package:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: yes
+  when: "'masters' in group_names"
+
+- name: Mark Kubernetes packages to hold (control plane)
+  # ansible.builtin.shell: apt-mark hold kubelet kubeadm kubectl
+  # warn: false
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    allow_change_held_packages: false
+  when: "'masters' in group_names"  
+
+
+# Worker nodes
+
+- name: Install Kubernetes components (worker nodes)
+  ansible.builtin.package:
+    name:
+      - kubelet
+      - kubeadm
+    state: present
+    update_cache: yes
+  when: "'workers' in group_names"
+
+- name: Mark Kubernetes packages to hold (worker nodes)
+  # ansible.builtin.shell: apt-mark hold kubelet kubeadm
+  # warn: false
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+    allow_change_held_packages: false
+  when: "'workers' in group_names"  
+
+
+
+- name: Enable and start kubelet service
+  ansible.builtin.systemd:
+    name: kubelet
+    state: restarted
+    daemon_reload: true
+    enabled: true
+  register: kubelet_status
+
+
+
+# Master node K8s cluster initialization
+
+- name: Set control plane IP dynamically
+  ansible.builtin.set_fact:
+    control_plane_ip: "{{ ansible_host }}"
+  when: "'masters' in group_names"
+
+- name: Generate kubeadm init config file from template
+  ansible.builtin.template:
+    src: kubeadm-config.yaml.j2
+    dest: /tmp/kubeadm-config.yaml
+  when: "'masters' in group_names"  
+
+- name: Initialize Kubernetes control-plane with kubeadm config
+  ansible.builtin.command: kubeadm init --config=/tmp/kubeadm-config.yaml
+  register: kubeadm_init_output
+  when: "'masters' in group_names"
+
+
+# Kube config setup for control plane node
+- name: Copy kubeconfig setup script to control plane node
+  ansible.builtin.copy:
+    src: files/setup_kubectl.sh
+    dest: /usr/local/bin/setup_kubectl.sh
+    owner: root
+    group: root
+    mode: '0755'
+  when: "'masters' in group_names"
+
+# If this file already exists, skip the task
+- name: Configure kubectl for the control plane node
+  ansible.builtin.command: /usr/local/bin/setup_kubectl.sh
+  args:
+    creates: /home/ubuntu/.kube/config
+  when: "'masters' in group_names"
+  become_user: ubuntu
+
+
+# Apply Calico CNI plugin
+# If this file already exists, skip the task
+- name: Apply Flannel CNI plugin
+  ansible.builtin.command: >
+    kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+  args:
+    creates: /etc/cni/net.d/10-flannel.conflist
+  when: "'masters' in group_names"
+  become_user: ubuntu
+
+- name: Wait for all system pods to be Ready
+  ansible.builtin.command: >
+    kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  when: "'masters' in group_names"
+  become_user: ubuntu
+
+
+
+# Generate and save kubeadm join command for worker nodes
+- name: Get kubeadm join command from master
+  ansible.builtin.command: kubeadm token create --print-join-command
+  register: join_cmd
+  when: "'masters' in group_names"
+  run_once: true  # Only fetch once even if multiple masters
+
+# - name: Save join command for worker nodes
+#   ansible.builtin.copy:
+#     dest: /join-command.txt
+#     content: |
+#       {% for line in kubeadm_init_output.stdout_lines %}
+#       {% if 'kubeadm join' in line %}
+#       {{ line }}
+#       {% endif %}
+#       {% endfor %}
+#     mode: '0644'
+#   when: "'masters' in group_names"
+
+
+
+# Join worker nodes to Kubernetes cluster
+
+- name: Join worker nodes to Kubernetes cluster
+  ansible.builtin.shell: "{{ hostvars[groups['masters'][0]].join_cmd.stdout }}"
+  args:
+    creates: /etc/kubernetes/kubelet.conf
+  when: "'workers' in group_names"
+
+- name: Wait for workers to be Ready
+  ansible.builtin.shell: |
+    kubectl get nodes --no-headers | grep -v 'control-plane' | grep -c 'Ready'
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  register: ready_nodes
+  retries: 10
+  delay: 15
+  until: ready_nodes.stdout|int >= {{ groups['workers'] | length }}
+  when: "'masters' in group_names"
+  become_user: ubuntu
+
+
+
+# - name: Wait for kubelet to become active
+#   ansible.builtin.command: systemctl is-active kubelet
+#   register: kubelet_check
+#   retries: 5
+#   delay: 2
+#   until: kubelet_check.stdout == "active"
+
+# - name: Assert kubelet is active and running
+#   ansible.builtin.assert:
+#     that:
+#       - kubelet_check.stdout == "active"
+#     fail_msg: "Kubelet is not running!"
+#     success_msg: "Kubelet is active and running."
+
