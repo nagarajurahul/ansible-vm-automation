@@ -80,3 +80,13 @@
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
   register: login_output
+
+- name: Update password for admin user
+  ansible.builtin.command: >
+    argocd account update-password
+    --account admin
+    --current-password "{{ argocd_old_password }}"
+    --new-password "{{ argocd_admin_password }}"
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  register: update_password_output
