@@ -49,6 +49,7 @@
     update_cache: yes
   when: "'masters' in group_names"
 
+# Specific to Ubuntu
 - name: Mark Kubernetes packages to hold (control plane)
   # ansible.builtin.shell: apt-mark hold kubelet kubeadm kubectl
   # warn: false
@@ -72,6 +73,7 @@
     update_cache: yes
   when: "'workers' in group_names"
 
+# Specific to Ubuntu
 - name: Mark Kubernetes packages to hold (worker nodes)
   # ansible.builtin.shell: apt-mark hold kubelet kubeadm
   # warn: false
@@ -130,6 +132,7 @@
     creates: /home/ubuntu/.kube/config
   when: "'masters' in group_names"
   become_user: ubuntu
+
 
 
 # Apply Calico CNI plugin

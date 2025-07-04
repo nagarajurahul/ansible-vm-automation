@@ -9,7 +9,7 @@
     update_cache: yes
 
 # Specific to Ubuntu
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html#ansible-collections-ansible-builtin-get-url-module
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#ansible-collections-ansible-builtin-file-module
 - name: Ensure /etc/apt/keyrings directory exists
   ansible.builtin.file:
     path: /etc/apt/keyrings
@@ -48,6 +48,8 @@
     group: root
     mode: '0644'
     backup: yes    
+
+
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/systemd_service_module.html#ansible-collections-ansible-builtin-systemd-service-module
 # Restarting the containerd service to apply the new configuration
