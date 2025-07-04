@@ -1,0 +1,42 @@
+---
+- name: Install prerequisites for Helm
+  ansible.builtin.package:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: yes
+
+# Specific to Ubuntu
+- name: Ensure /etc/apt/keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+# Specific to Ubuntu
+- name: Install Helm key
+  ansible.builtin.get_url:
+    url: https://baltocdn.com/helm/signing.asc
+    dest: /etc/apt/keyrings/helm.asc
+    mode: '0644'
+
+# Specific to Ubuntu
+- name: Convert Helm GPG key to ASCII armored format
+  ansible.builtin.command: >
+    gpg --batch --yes --dearmor
+    -o /etc/apt/keyrings/helm-apt-keyring.gpg
+    /etc/apt/keyrings/helm.asc
+
+# Specific to Ubuntu
+- name: Add Helm repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/helm-apt-keyring.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+    state: present
+
+- name: Install Helm
+  ansible.builtin.package:
+    name: helm
+    state: present
+    update_cache: yes
