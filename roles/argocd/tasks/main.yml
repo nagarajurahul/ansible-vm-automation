@@ -35,3 +35,21 @@
     retries: 30
     delay: 5
     loop: "{{ argocd_pods.resources }}"
+
+
+
+- name: Copy ArgoCD CLI install script
+  ansible.builtin.copy:
+    src: files/argocd_install.sh
+    dest: /usr/local/bin/argocd_install.sh
+    mode: '0755'
+
+- name: Run script to install ArgoCD CLI 
+  ansible.builtin.command: /usr/local/bin/argocd_install.sh
+  register: argocd_install_output
+  changed_when: false
+
+# - name: Assert ArgoCD installation was successful
+#   ansible.builtin.assert:
+#     that:
+#       - "'successfully' in argocd_install_output.stdout"
