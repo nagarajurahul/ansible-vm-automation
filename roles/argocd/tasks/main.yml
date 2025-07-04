@@ -11,30 +11,32 @@
     url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
     dest: /tmp/argocd-install.yaml
 
-- name: Apply ArgoCD manifests
+- name: Apply ArgoCD YAML
   kubernetes.core.k8s:
     src: /tmp/argocd-install.yaml
     state: present
 
 
 
-- name: Get the list of ArgoCD pods in the argocd namespace
+- name: Get ArgoCD pods
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: argocd
   register: argocd_pods
 
-- name: Wait till the Pods are running
+- name: Wait till ArgoCD Pods are Running & Ready
   kubernetes.core.k8s_info:
     kind: Pod
     wait: yes
     name: "{{ item.metadata.name }}"
     namespace: argocd
     register: pod_status
-    until: pod_status.resources[0].status.phase == "Running"
+    until: pod_status.resources[0].status.phase == "Running" and
+            pod_status.resources[0].status.containerStatuses | selectattr('ready', 'equalto', true) | list | length == pod_status.resources[0].status.containerStatuses | length
     retries: 30
     delay: 5
     loop: "{{ argocd_pods.resources }}"
+    changed_when: false
 
 
 
@@ -57,7 +59,7 @@
 
 
 # kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-
+# argocd admin initial-password -n argocd
 - name: Get ArgoCD server secret
   kubernetes.core.k8s_info:
     kind: Secret
@@ -69,14 +71,12 @@
   ansible.builtin.set_fact:
     argocd_old_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
 
-
-
-- name: Login to ArgoCD server
+- name: Login to ArgoCD CLI
   ansible.builtin.command: >
-    argocd login --insecure --grpc-web
+    argocd login localhost:"{{ argocd_server_port }}"
     --username admin
     --password "{{ argocd_old_password }}"
-    --server localhost:8080
+    --insecure --grpc-web 
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
   register: login_output
