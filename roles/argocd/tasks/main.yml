@@ -90,3 +90,11 @@
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
   register: update_password_output
+
+
+
+- name: Create ArgoCD Application
+  kubernetes.core.k8s:
+    state: present
+    src: files/ci-cd-app.yaml
+
