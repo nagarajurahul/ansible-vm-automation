@@ -15,3 +15,23 @@
   kubernetes.core.k8s:
     src: /tmp/argocd-install.yaml
     state: present
+
+
+
+- name: Get the list of ArgoCD pods in the argocd namespace
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: argocd
+  register: argocd_pods
+
+- name: Wait till the Pods are running
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    name: "{{ item.metadata.name }}"
+    namespace: argocd
+    register: pod_status
+    until: pod_status.resources[0].status.phase == "Running"
+    retries: 30
+    delay: 5
+    loop: "{{ argocd_pods.resources }}"
