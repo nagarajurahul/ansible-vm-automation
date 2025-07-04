@@ -53,3 +53,18 @@
 #   ansible.builtin.assert:
 #     that:
 #       - "'successfully' in argocd_install_output.stdout"
+
+
+
+# kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+- name: Get ArgoCD server secret
+  kubernetes.core.k8s_info:
+    kind: Secret
+    namespace: argocd
+    name: argocd-initial-admin-secret
+  register: argocd_secret
+
+- name: Set ArgoCD admin password fact
+  ansible.builtin.set_fact:
+    argocd_old_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
