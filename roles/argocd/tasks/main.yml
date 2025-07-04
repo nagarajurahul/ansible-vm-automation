@@ -68,3 +68,15 @@
 - name: Set ArgoCD admin password fact
   ansible.builtin.set_fact:
     argocd_old_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
+
+
+
+- name: Login to ArgoCD server
+  ansible.builtin.command: >
+    argocd login --insecure --grpc-web
+    --username admin
+    --password "{{ argocd_old_password }}"
+    --server localhost:8080
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  register: login_output
