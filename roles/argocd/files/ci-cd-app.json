@@ -3,7 +3,16 @@
   "kind": "Application",
   "metadata": {
     "name": "ci-cd-app",
-    "namespace": "argocd"
+    "namespace": "argocd",
+    "annotations" : {
+      "argocd-image-updater.argoproj.io/git-repository": "git@github.com:nagarajurahul/helm-charts.git",
+      "argocd-image-updater.argoproj.io/image-list": "image=nagarajurahul/rahul-repos:latest",
+      "argocd-image-updater.argoproj.io/image.helm.image.repository": "image.name",
+      "argocd-image-updater.argoproj.io/image.helm.image.tag": "image.tag",
+      "argocd-image-updater.argoproj.io/image.update-strategy": "digest",
+      "argocd-image-updater.argoproj.io/write-back-method": "git:secret:argocd/git-creds",
+      "argocd-image-updater.argoproj.io/write-back-target-branch": "main"
+    }
   },
   "spec": {
     "destination": {
