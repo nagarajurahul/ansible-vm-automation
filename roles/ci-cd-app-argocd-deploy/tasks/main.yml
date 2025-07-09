@@ -41,5 +41,5 @@
 - name: Create ArgoCD Application
   kubernetes.core.k8s:
     state: present
-    src: files/ci-cd-app.yaml
+    src: ci-cd-app.yaml
     kubeconfig: /home/ubuntu/.kube/config
