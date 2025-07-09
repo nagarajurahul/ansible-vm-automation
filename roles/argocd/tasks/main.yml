@@ -34,6 +34,7 @@
   kubernetes.core.k8s:
     src: /tmp/argocd-install.yaml
     state: present
+    namespace: argocd
     kubeconfig: /home/ubuntu/.kube/config
 
 
