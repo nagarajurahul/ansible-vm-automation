@@ -1,0 +1,22 @@
+---
+- name: Install Helm
+  hosts: all
+  become: true
+  roles:
+    - helm
+
+- name: Install ArgoCD
+  hosts: all
+  become: true
+  vars_files:
+    - vars/argocd.yml
+  roles:
+    - argocd
+
+- name: Deploy CI/CD Application with ArgoCD
+  hosts: all
+  become: true
+  vars_files:
+    - vars/github.yml
+  roles:
+    - ci-cd-app-argocd-deploy
