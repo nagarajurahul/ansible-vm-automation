@@ -38,8 +38,16 @@
 
 
 
+- name: Copy ArgoCD Application manifest
+  ansible.builtin.copy:
+    src: ci-cd-app.yaml
+    dest: /tmp/ci-cd-app.yaml
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
 - name: Create ArgoCD Application
   kubernetes.core.k8s:
     state: present
-    src: ci-cd-app.yaml
+    src: /tmp/ci-cd-app.yaml
     kubeconfig: /home/ubuntu/.kube/config
