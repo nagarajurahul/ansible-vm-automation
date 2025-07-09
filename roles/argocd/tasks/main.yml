@@ -73,9 +73,31 @@
   ansible.builtin.set_fact:
     argocd_old_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
 
+
+
+- name: Patch ArgoCD server to NodePort
+  ansible.builtin.command: >
+    kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+
+- name: Get NodePort for ArgoCD
+  kubernetes.core.k8s_info:
+    kind: Service
+    namespace: argocd
+    name: argocd-server
+  register: argocd_svc_info
+
+- name: Set facts for login
+  set_fact:
+    argocd_server_port: "{{ argocd_svc_info.resources[0].spec.ports[0].nodePort }}"
+    argocd_server_ip: "{{ groups['workers'][0] }}"
+
+
+
 - name: Login to ArgoCD CLI
   ansible.builtin.command: >
-    argocd login localhost:"{{ argocd_server_port }}"
+    argocd login {{ argocd_server_ip }}:{{ argocd_server_port }}
     --username admin
     --password "{{ argocd_old_password }}"
     --insecure --grpc-web 
@@ -92,4 +114,11 @@
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
   register: update_password_output
-  
+
+
+
+- name: Patch ArgoCD server service back to ClusterIP
+  ansible.builtin.command: >
+    kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
