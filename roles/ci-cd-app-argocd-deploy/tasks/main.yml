@@ -1,0 +1,39 @@
+- name: Create ArgoCD HTTPS secret for pulling manifests
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: github-https-creds
+        namespace: argocd
+        annotations:
+          argocd.argoproj.io/secret-type: repository
+      type: Opaque
+      stringData:
+        url: "{{ github_gitops_repo_url }}"
+        username: "git"
+        password: "{{ github_pat }}"
+
+- name: Create ArgoCD SSH secret for Image Updater push
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: github-ssh-creds
+        namespace: argocd
+        annotations:
+          argocd.argoproj.io/secret-type: repository
+      type: Opaque
+      stringData:
+        url: "{{ github_gitops_repo_ssh_url }}"
+        sshPrivateKey: "{{ github_ssh_private_key }}"
+
+
+
+- name: Create ArgoCD Application
+  kubernetes.core.k8s:
+    state: present
+    src: files/ci-cd-app.yaml
