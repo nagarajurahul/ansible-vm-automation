@@ -46,20 +46,28 @@
     kubeconfig: /home/ubuntu/.kube/config
   register: argocd_pods
 
-- name: Wait till ArgoCD Pods are Running & Ready
+- name: Wait till each ArgoCD pod is Running & Ready
   kubernetes.core.k8s_info:
     kind: Pod
     wait: yes
     name: "{{ item.metadata.name }}"
     namespace: argocd
-    register: pod_status
-    until: pod_status.resources[0].status.phase == "Running" and
-            pod_status.resources[0].status.containerStatuses | selectattr('ready', 'equalto', true) | list | length == pod_status.resources[0].status.containerStatuses | length
-    retries: 30
-    delay: 5
-    loop: "{{ argocd_pods.resources }}"
-    changed_when: false
     kubeconfig: /home/ubuntu/.kube/config
+  loop: "{{ argocd_pods.resources }}"
+  register: pod_status
+  until: >
+    pod_status.results[ansible_loop.index0].resources[0].status.phase == "Running"
+    and
+    (
+      pod_status.results[ansible_loop.index0].resources[0].status.containerStatuses
+      | selectattr('ready', 'equalto', true)
+      | list
+      | length
+    ) == (pod_status.results[ansible_loop.index0].resources[0].status.containerStatuses | length)
+  retries: 30
+  delay: 5
+  changed_when: false
+
 
 
 
