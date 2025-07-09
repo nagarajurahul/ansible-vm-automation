@@ -1,6 +1,9 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
 
+- name: Install pip for Python 3
+  ansible.builtin.command: python -m ensurepip --upgrade
+
 - name: Install kubernetes python package
   ansible.builtin.pip:
     name: kubernetes
