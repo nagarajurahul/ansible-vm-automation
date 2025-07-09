@@ -1,6 +1,10 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
 
+- name: Install kubernetes python package
+  ansible.builtin.pip:
+    name: kubernetes
+
 - name: Create a Namespace for ArgoCD
   kubernetes.core.k8s:
     name: argocd
