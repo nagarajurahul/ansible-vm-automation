@@ -1,3 +1,6 @@
+---
+# https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
+
 - name: Create ArgoCD HTTPS secret for pulling manifests
   kubernetes.core.k8s:
     state: present

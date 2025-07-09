@@ -1,4 +1,6 @@
+---
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
+
 - name: Create a Namespace for ArgoCD
   kubernetes.core.k8s:
     name: argocd
