@@ -122,7 +122,7 @@
 - name: Set facts for login
   set_fact:
     argocd_server_port: "{{ argocd_svc_info.resources[0].spec.ports[0].nodePort }}"
-    argocd_server_ip: "{{ groups['workers'][0] }}"
+    argocd_server_ip: "{{ hostvars[groups['workers'][0]].ansible_host }}"
 
 
 
