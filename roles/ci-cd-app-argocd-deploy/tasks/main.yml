@@ -4,6 +4,7 @@
 - name: Create ArgoCD HTTPS secret for pulling manifests
   kubernetes.core.k8s:
     state: present
+    kubeconfig: /home/ubuntu/.kube/config
     definition:
       apiVersion: v1
       kind: Secret
@@ -21,6 +22,7 @@
 - name: Create ArgoCD SSH secret for Image Updater push
   kubernetes.core.k8s:
     state: present
+    kubeconfig: /home/ubuntu/.kube/config
     definition:
       apiVersion: v1
       kind: Secret
@@ -40,3 +42,4 @@
   kubernetes.core.k8s:
     state: present
     src: files/ci-cd-app.yaml
+    kubeconfig: /home/ubuntu/.kube/config

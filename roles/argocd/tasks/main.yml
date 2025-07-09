@@ -23,6 +23,7 @@
     api_version: v1
     kind: Namespace
     state: present
+    kubeconfig: /home/ubuntu/.kube/config
 
 - name: Download ArgoCD manifests
   ansible.builtin.get_url:
@@ -33,6 +34,7 @@
   kubernetes.core.k8s:
     src: /tmp/argocd-install.yaml
     state: present
+    kubeconfig: /home/ubuntu/.kube/config
 
 
 
@@ -40,6 +42,7 @@
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: argocd
+    kubeconfig: /home/ubuntu/.kube/config
   register: argocd_pods
 
 - name: Wait till ArgoCD Pods are Running & Ready
@@ -55,6 +58,7 @@
     delay: 5
     loop: "{{ argocd_pods.resources }}"
     changed_when: false
+    kubeconfig: /home/ubuntu/.kube/config
 
 
 
@@ -83,6 +87,7 @@
     kind: Secret
     namespace: argocd
     name: argocd-initial-admin-secret
+    kubeconfig: /home/ubuntu/.kube/config
   register: argocd_secret
 
 - name: Set ArgoCD admin password fact
@@ -102,6 +107,7 @@
     kind: Service
     namespace: argocd
     name: argocd-server
+    kubeconfig: /home/ubuntu/.kube/config
   register: argocd_svc_info
 
 - name: Set facts for login
