@@ -1,7 +1,7 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
 
-# Error sayining externally managed package
+# Note: Error sayining externally managed package
 
 # - name: Install pip for Python 3
 #   ansible.builtin.package:
@@ -16,6 +16,8 @@
   ansible.builtin.package:
     name: python3-kubernetes
     state: present
+
+
 
 - name: Create a Namespace for ArgoCD
   kubernetes.core.k8s:
@@ -101,7 +103,7 @@
 
 - name: Set ArgoCD admin password fact
   ansible.builtin.set_fact:
-    argocd_old_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
+    argocd_initial_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
 
 
 
@@ -119,6 +121,7 @@
     kubeconfig: /home/ubuntu/.kube/config
   register: argocd_svc_info
 
+# Note: argocd_server_ip can be set to the IP of any worker node
 - name: Set facts for login
   set_fact:
     argocd_server_port: "{{ argocd_svc_info.resources[0].spec.ports[0].nodePort }}"
@@ -130,7 +133,7 @@
   ansible.builtin.command: >
     argocd login {{ argocd_server_ip }}:{{ argocd_server_port }}
     --username admin
-    --password "{{ argocd_old_password }}"
+    --password "{{ argocd_initial_password }}"
     --insecure --grpc-web 
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
@@ -140,7 +143,7 @@
   ansible.builtin.command: >
     argocd account update-password
     --account admin
-    --current-password "{{ argocd_old_password }}"
+    --current-password "{{ argocd_initial_password }}"
     --new-password "{{ argocd_admin_password }}"
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
