@@ -171,6 +171,8 @@
     namespace: argocd
     kubeconfig: /home/ubuntu/.kube/config
 
+# Note: The following tasks are commented out as they are not needed for the current setup.
+# They can be uncommented if you want to create a ConfigMap for ArgoCD Image Updater.
 # - name: Create ArgoCD Image Updater ConfigMap
 #   kubernetes.core.k8s:
 #     state: present
