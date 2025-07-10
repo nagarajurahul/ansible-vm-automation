@@ -19,7 +19,7 @@
         username: "git"
         password: "{{ github_pat }}"
 
-- name: Create ArgoCD SSH secret for Image Updater push
+- name: Create ArgoCD SSH secret for ArgoCD Image Updater push
   kubernetes.core.k8s:
     state: present
     kubeconfig: /home/ubuntu/.kube/config
