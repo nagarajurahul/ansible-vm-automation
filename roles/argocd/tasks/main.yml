@@ -137,7 +137,7 @@
     --insecure --grpc-web 
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
-  register: login_output
+  register: argocd_login_output
 
 - name: Update password for admin user
   ansible.builtin.command: >
@@ -147,7 +147,7 @@
     --new-password "{{ argocd_admin_password }}"
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
-  register: update_password_output
+  register: argocd_update_password_output
 
 
 
@@ -205,4 +205,12 @@
 #                   updateOnImageRepositoryTagChange: true
 #                   updateOnImageRepositoryDigestChange: true
 #                   updateOnImageRepositoryTagChange: true 
-                              
+                            
+
+
+- name: Get ArgoCD Image Updater pods
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: argocd
+    kubeconfig: /home/ubuntu/.kube/config
+  register: argocd_image_updater_pods
