@@ -153,3 +153,53 @@
     kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
   environment:
     KUBECONFIG: /home/ubuntu/.kube/config
+
+
+
+- name: Download ArgoCD Image Updater manifests
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/manifests/install.yaml
+    dest: /tmp/argocd-image-updater.yaml
+
+- name: Apply ArgoCD Image Updater manifests
+  kubernetes.core.k8s:
+    src: /tmp/argocd-image-updater.yaml
+    state: present
+    namespace: argocd
+    kubeconfig: /home/ubuntu/.kube/config
+
+# - name: Create ArgoCD Image Updater ConfigMap
+#   kubernetes.core.k8s:
+#     state: present
+#     kubeconfig: /home/ubuntu/.kube/config
+#     definition:
+#       apiVersion: v1
+#       kind: ConfigMap
+#       metadata:
+#         name: argocd-image-updater-cm
+#         namespace: argocd
+#       data:
+#         config: |
+#           imageUpdater:
+#             repositories:
+#               - name: github
+#                 type: git
+#                 url: "{{ github_gitops_repo_ssh_url }}"
+#                 sshPrivateKeySecret: github-ssh-creds
+#                 imageUpdater:
+#                   enabled: true
+#                   updateStrategy: latest
+#                   updateMethod: latest
+#                   updateInterval: 1h
+#                   updateOnDeploy: true
+#                   updateOnSync: true
+#                   updateOnStartup: true
+#                   updateOnImageChange: true
+#                   updateOnImagePull: true
+#                   updateOnImageTagChange: true
+#                   updateOnImageDigestChange: true
+#                   updateOnImageRepositoryChange: true
+#                   updateOnImageRepositoryTagChange: true
+#                   updateOnImageRepositoryDigestChange: true
+#                   updateOnImageRepositoryTagChange: true 
+                              
