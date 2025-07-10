@@ -19,6 +19,7 @@
 
 
 
+# Note: Can be also installed using Helm chart
 - name: Create a Namespace for ArgoCD
   kubernetes.core.k8s:
     name: argocd
@@ -159,6 +160,7 @@
 
 
 
+# Note: Can be also installed using Helm chart
 - name: Download ArgoCD Image Updater manifests
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/manifests/install.yaml
