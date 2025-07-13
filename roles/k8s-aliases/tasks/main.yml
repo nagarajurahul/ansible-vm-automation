@@ -5,7 +5,7 @@
 
 - name: Copy K8s aliases file
   ansible.builtin.copy:
-    src: files/k8s_aliases.sh
+    src: k8s_aliases.sh
     dest: /tmp/k8s_aliases.sh
     mode: '0644'
 
