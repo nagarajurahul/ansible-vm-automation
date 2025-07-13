@@ -22,3 +22,25 @@
   kubernetes.core.k8s:
     src: /tmp/metallb-config.yaml
     state: present
+
+
+
+- name: Wait for MetalLB pods to be ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: metallb-system
+  register: metallb_pods
+  
+# - name: Wait till MetalLB Pods are Running & Ready
+#   kubernetes.core.k8s_info:
+#     kind: Pod
+#     wait: yes
+#     name: "{{ item.metadata.name }}"
+#     namespace: metallb-system
+#     register: pod_status
+#     until: pod_status.resources[0].status.phase == "Running" and
+#             pod_status.resources[0].status.containerStatuses | selectattr('ready', 'equalto', true) | list | length == pod_status.resources[0].status.containerStatuses | length
+#     retries: 30
+#     delay: 5
+#     loop: "{{ metallb_pods.resources }}"
+#     changed_when: false
