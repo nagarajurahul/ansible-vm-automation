@@ -10,3 +10,9 @@
   become: true
   roles:
     - metallb
+
+- name: Install Traefik
+  hosts: masters
+  become: true
+  roles:
+    - traefik
