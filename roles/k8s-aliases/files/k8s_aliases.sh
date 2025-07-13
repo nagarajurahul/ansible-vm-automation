@@ -2,7 +2,7 @@
 
 # General Aliases:
 alias k='kubectl'
-alias ks= 'kubectl -n kube-system'
+alias ks='kubectl -n kube-system'
 alias kdesc='kubectl describe'
 
 # Create Resources:
@@ -17,7 +17,7 @@ alias kgs='kubectl get services'
 alias kgd='kubectl get deployments'
 
 # Delete Resources:
-alias kd= 'kubectl delete'
+alias kd='kubectl delete'
 alias kdp='kubectl delete pod'
 alias kds='kubectl delete service'
 alias kdd='kubectl delete deployment'
