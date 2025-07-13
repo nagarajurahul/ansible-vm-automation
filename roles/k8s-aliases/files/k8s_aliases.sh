@@ -12,7 +12,7 @@ alias kaf='kubectl apply -f'
 # Get resources:
 alias kgn='kubectl get nodes'
 alias kgp='kubectl get pods'
-alias kgpa='kubectl get pods -- all-namespaces'
+alias kgpa='kubectl get pods --all-namespaces'
 alias kgs='kubectl get services'
 alias kgd='kubectl get deployments'
 
