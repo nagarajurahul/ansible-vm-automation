@@ -14,11 +14,11 @@
 #     echo "source /tmp/k8s_aliases.sh" >>  $HOME/.bashrc
 #   args:
 #     executable: /bin/bash
-#   user: ubuntu
+#   become_user: ubuntu
 
 # Idempotency: Ensure the aliases file is sourced in .bashrc exactly once
 - name: Ensure aliases file is sourced in .bashrc exactly once
   ansible.builtin.lineinfile:
     path: ~/.bashrc
     line: "source /tmp/k8s_aliases.sh"
-  user: ubuntu
+  become_user: ubuntu
