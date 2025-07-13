@@ -10,3 +10,15 @@
   kubernetes.core.k8s:
     src: /tmp/metallb-install.yaml
     state: present
+
+
+
+- name: Copy MetalLB configuration
+  ansible.builtin.copy:
+    src: metallb-config.yaml
+    dest: /tmp/metallb-config.yaml
+
+- name: Apply MetalLB configuration
+  kubernetes.core.k8s:
+    src: /tmp/metallb-config.yaml
+    state: present
