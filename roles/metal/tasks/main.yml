@@ -1,0 +1,12 @@
+---
+# https://docs.ansible.com/ansible/latest/collections/kubernetes/core/index.html
+
+- name: Download MetalLB manifests
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
+    dest: /tmp/metallb-install.yaml
+  
+- name: Apply MetalLB YAML manifests
+  kubernetes.core.k8s:
+    src: /tmp/metallb-install.yaml
+    state: present
