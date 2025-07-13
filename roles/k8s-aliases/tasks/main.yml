@@ -10,6 +10,6 @@
     mode: '0644'
 
 - name: Source K8s aliases file
-  ansible.builtin.shell: 
+  ansible.builtin.shell: |
     echo "source /tmp/k8s_aliases.sh" >> ~/.bashrc
     source ~/.bashrc
