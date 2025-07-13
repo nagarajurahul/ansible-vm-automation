@@ -1,0 +1,220 @@
+---
+# https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
+
+# Note: Error sayining externally managed package
+
+# - name: Install pip for Python 3
+#   ansible.builtin.package:
+#     name: python3-pip
+#     state: present
+
+# - name: Install kubernetes python package
+#   ansible.builtin.pip:
+#     name: kubernetes
+
+- name: Install kubernetes python package
+  ansible.builtin.package:
+    name: python3-kubernetes
+    state: present
+
+
+
+# Note: Can be also installed using Helm chart
+- name: Create a Namespace for ArgoCD
+  kubernetes.core.k8s:
+    name: argocd
+    api_version: v1
+    kind: Namespace
+    state: present
+    kubeconfig: /home/ubuntu/.kube/config
+
+- name: Download ArgoCD manifests
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    dest: /tmp/argocd-install.yaml
+
+- name: Apply ArgoCD YAML
+  kubernetes.core.k8s:
+    src: /tmp/argocd-install.yaml
+    state: present
+    namespace: argocd
+    kubeconfig: /home/ubuntu/.kube/config
+
+
+
+- name: Get ArgoCD pods
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: argocd
+    kubeconfig: /home/ubuntu/.kube/config
+  register: argocd_pods
+
+# - name: Wait till each ArgoCD pod is Running & Ready
+#   kubernetes.core.k8s_info:
+#     kind: Pod
+#     wait: yes
+#     name: "{{ item.metadata.name }}"
+#     namespace: argocd
+#     kubeconfig: /home/ubuntu/.kube/config
+#   loop: "{{ argocd_pods.resources }}"
+#   register: pod_status
+#   until: >
+#     pod_status.results[ansible_loop.index0].resources[0].status.phase == "Running"
+#     and
+#     (
+#       pod_status.results[ansible_loop.index0].resources[0].status.containerStatuses
+#       | selectattr('ready', 'equalto', true)
+#       | list
+#       | length
+#     ) == (pod_status.results[ansible_loop.index0].resources[0].status.containerStatuses | length)
+#   retries: 30
+#   delay: 5
+#   changed_when: false
+
+
+
+
+- name: Copy ArgoCD CLI install script
+  ansible.builtin.copy:
+    src: files/argocd_install.sh
+    dest: /usr/local/bin/argocd_install.sh
+    mode: '0755'
+
+- name: Run script to install ArgoCD CLI 
+  ansible.builtin.command: /usr/local/bin/argocd_install.sh
+  register: argocd_install_output
+  changed_when: false
+
+# - name: Assert ArgoCD installation was successful
+#   ansible.builtin.assert:
+#     that:
+#       - "'successfully' in argocd_install_output.stdout"
+
+
+
+# kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+# argocd admin initial-password -n argocd
+- name: Get ArgoCD server secret
+  kubernetes.core.k8s_info:
+    kind: Secret
+    namespace: argocd
+    name: argocd-initial-admin-secret
+    kubeconfig: /home/ubuntu/.kube/config
+  register: argocd_secret
+
+- name: Set ArgoCD admin password fact
+  ansible.builtin.set_fact:
+    argocd_initial_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
+
+
+
+- name: Patch ArgoCD server to NodePort
+  ansible.builtin.command: >
+    kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+
+- name: Get NodePort for ArgoCD
+  kubernetes.core.k8s_info:
+    kind: Service
+    namespace: argocd
+    name: argocd-server
+    kubeconfig: /home/ubuntu/.kube/config
+  register: argocd_svc_info
+
+# Note: argocd_server_ip can be set to the IP of any worker node
+- name: Set facts for login
+  set_fact:
+    argocd_server_port: "{{ argocd_svc_info.resources[0].spec.ports[0].nodePort }}"
+    argocd_server_ip: "{{ hostvars[groups['workers'][0]].ansible_host }}"
+
+
+
+- name: Login to ArgoCD CLI
+  ansible.builtin.command: >
+    argocd login {{ argocd_server_ip }}:{{ argocd_server_port }}
+    --username admin
+    --password "{{ argocd_initial_password }}"
+    --insecure --grpc-web 
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  register: argocd_login_output
+
+- name: Update password for admin user
+  ansible.builtin.command: >
+    argocd account update-password
+    --account admin
+    --current-password "{{ argocd_initial_password }}"
+    --new-password "{{ argocd_admin_password }}"
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  register: argocd_update_password_output
+
+
+
+- name: Patch ArgoCD server service back to ClusterIP
+  ansible.builtin.command: >
+    kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+
+
+
+# Note: Can be also installed using Helm chart
+- name: Download ArgoCD Image Updater manifests
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/manifests/install.yaml
+    dest: /tmp/argocd-image-updater.yaml
+
+- name: Apply ArgoCD Image Updater manifests
+  kubernetes.core.k8s:
+    src: /tmp/argocd-image-updater.yaml
+    state: present
+    namespace: argocd
+    kubeconfig: /home/ubuntu/.kube/config
+
+# Note: The following tasks are commented out as they are not needed for the current setup.
+# They can be uncommented if you want to create a ConfigMap for ArgoCD Image Updater.
+# - name: Create ArgoCD Image Updater ConfigMap
+#   kubernetes.core.k8s:
+#     state: present
+#     kubeconfig: /home/ubuntu/.kube/config
+#     definition:
+#       apiVersion: v1
+#       kind: ConfigMap
+#       metadata:
+#         name: argocd-image-updater-cm
+#         namespace: argocd
+#       data:
+#         config: |
+#           imageUpdater:
+#             repositories:
+#               - name: github
+#                 type: git
+#                 url: "{{ github_gitops_repo_ssh_url }}"
+#                 sshPrivateKeySecret: github-ssh-creds
+#                 imageUpdater:
+#                   enabled: true
+#                   updateStrategy: latest
+#                   updateMethod: latest
+#                   updateInterval: 1h
+#                   updateOnDeploy: true
+#                   updateOnSync: true
+#                   updateOnStartup: true
+#                   updateOnImageChange: true
+#                   updateOnImagePull: true
+#                   updateOnImageTagChange: true
+#                   updateOnImageDigestChange: true
+#                   updateOnImageRepositoryChange: true
+#                   updateOnImageRepositoryTagChange: true
+#                   updateOnImageRepositoryDigestChange: true
+#                   updateOnImageRepositoryTagChange: true 
+                            
+
+
+- name: Get ArgoCD Image Updater pods
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: argocd
+    kubeconfig: /home/ubuntu/.kube/config
+  register: argocd_image_updater_pods

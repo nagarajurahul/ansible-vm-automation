@@ -1,0 +1,6 @@
+---
+- name: Run K8s aliases setup
+  hosts: masters
+  become: true
+  roles:
+    - k8s-aliases
