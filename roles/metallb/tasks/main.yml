@@ -10,6 +10,7 @@
   kubernetes.core.k8s:
     src: /tmp/metallb-install.yaml
     state: present
+    kubeconfig: /home/ubuntu/.kube/config
 
 
 
@@ -22,6 +23,7 @@
   kubernetes.core.k8s:
     src: /tmp/metallb-config.yaml
     state: present
+    kubeconfig: /home/ubuntu/.kube/config
 
 
 
