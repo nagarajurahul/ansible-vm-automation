@@ -1,22 +1,14 @@
 ---
-# - name: Install Helm (on K8s Master nodes)
-#   hosts: masters
-#   become: true
-#   roles:
-#     - helm
+- name: Install Helm (on K8s Master nodes)
+  hosts: masters
+  become: true
+  roles:
+    - helm
 
-# - name: Install ArgoCD on Worker nodes and ArgoCD CLI on Master nodes
-#   hosts: masters
-#   become: true
-#   vars_files:
-#     - vars/argocd.yml
-#   roles:
-#     - argocd
-
-- name: Deploy CI/CD Application with ArgoCD
+- name: Install ArgoCD on Worker nodes and ArgoCD CLI on Master nodes
   hosts: masters
   become: true
   vars_files:
-    - vars/github.yml
+    - vars/argocd.yml
   roles:
-    - ci-cd-app-argocd-deploy
+    - argocd

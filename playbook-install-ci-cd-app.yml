@@ -1,0 +1,8 @@
+---
+- name: Deploy CI/CD Application with ArgoCD
+  hosts: masters
+  become: true
+  vars_files:
+    - vars/github.yml
+  roles:
+    - ci-cd-app-argocd-deploy
