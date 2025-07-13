@@ -22,3 +22,13 @@
     path: ~/.bashrc
     line: "source /tmp/k8s_aliases.sh"
   become_user: ubuntu
+
+
+- name: Ensure K8s aliases are available in the current session
+  ansible.builtin.shell: |
+    source ~/.bashrc
+    echo "K8s aliases loaded successfully."
+  args:
+    executable: /bin/bash
+  become_user: ubuntu
+  register: k8s_aliases_output  
