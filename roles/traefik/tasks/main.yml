@@ -19,3 +19,15 @@
     release_namespace: traefik-v2
     create_namespace: true
     update_repo_cache: True
+    kubeconfig: /home/ubuntu/.kube/config
+    # values:
+    #   - dashboard.enabled=true
+    #   - dashboard.domain=traefik.local
+    #   - additionalArguments:
+    #       - "--providers.kubernetescrd"
+    #       - "--entrypoints.web.address=:80"
+    #       - "--entrypoints.websecure.address=:443"
+    #       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+    #       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"   
+    #       - "--entrypoints.websecure.http.tls=true"
+    #       - "--entrypoints.websecure.http.tls.certResolver=default"
