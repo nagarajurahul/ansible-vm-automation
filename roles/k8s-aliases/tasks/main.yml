@@ -9,8 +9,14 @@
     dest: /tmp/k8s_aliases.sh
     mode: '0644'
 
-- name: Source K8s aliases file
-  ansible.builtin.shell: |
-    echo "source /tmp/k8s_aliases.sh" >>  $HOME/.bashrc
-  args:
-    executable: /bin/bash
+# - name: Source K8s aliases file
+#   ansible.builtin.shell: |
+#     echo "source /tmp/k8s_aliases.sh" >>  $HOME/.bashrc
+#   args:
+#     executable: /bin/bash
+
+# Idempotency: Ensure the aliases file is sourced in .bashrc exactly once
+- name: Ensure aliases file is sourced in .bashrc exactly once
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: "source /tmp/k8s_aliases.sh"
