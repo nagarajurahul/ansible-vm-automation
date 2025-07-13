@@ -4,3 +4,9 @@
   become: true
   roles:
     - k8s-aliases
+
+- name: Install MetalLB
+  hosts: masters
+  become: true
+  roles:
+    - metallb
