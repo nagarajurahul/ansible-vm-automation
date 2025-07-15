@@ -3,16 +3,16 @@
   hosts: all
   become: true
   roles:
-    - k8s/common
+    - prechecks
 
 - name: Install and Configure Container Runtime (containerd)
   hosts: all
   become: true
   roles:
-    - k8s/containerd
+    - containerd
 
 - name: Final Kubernetes Init & Node Join Setup
   hosts: all
   become: true
   roles:
-    - k8s/final
+    - k8s
