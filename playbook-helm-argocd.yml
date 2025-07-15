@@ -10,5 +10,6 @@
   become: true
   vars_files:
     - vars/argocd.yml
+    - vars/k8s.yml
   roles:
     - argocd

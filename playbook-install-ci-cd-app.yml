@@ -4,5 +4,6 @@
   become: true
   vars_files:
     - vars/github.yml
+    - vars/k8s.yml
   roles:
     - ci-cd-app-argocd-deploy
