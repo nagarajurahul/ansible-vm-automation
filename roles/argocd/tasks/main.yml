@@ -26,7 +26,7 @@
     api_version: v1
     kind: Namespace
     state: present
-    kubeconfig: /home/ubuntu/.kube/config
+    kubeconfig: {{ kubeconfig_path }}
 
 - name: Download ArgoCD manifests
   ansible.builtin.get_url:
@@ -38,7 +38,7 @@
     src: /tmp/argocd-install.yaml
     state: present
     namespace: argocd
-    kubeconfig: /home/ubuntu/.kube/config
+    kubeconfig: {{ kubeconfig_path }}
 
 
 
@@ -46,7 +46,7 @@
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: argocd
-    kubeconfig: /home/ubuntu/.kube/config
+    kubeconfig: {{ kubeconfig_path }}
   register: argocd_pods
 
 # - name: Wait till each ArgoCD pod is Running & Ready
@@ -55,7 +55,7 @@
 #     wait: yes
 #     name: "{{ item.metadata.name }}"
 #     namespace: argocd
-#     kubeconfig: /home/ubuntu/.kube/config
+#     kubeconfig: {{ kubeconfig_path | }}
 #   loop: "{{ argocd_pods.resources }}"
 #   register: pod_status
 #   until: >
@@ -99,7 +99,7 @@
     kind: Secret
     namespace: argocd
     name: argocd-initial-admin-secret
-    kubeconfig: /home/ubuntu/.kube/config
+    kubeconfig: {{ kubeconfig_path }}
   register: argocd_secret
 
 - name: Set ArgoCD admin password fact
@@ -112,14 +112,14 @@
   ansible.builtin.command: >
     kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
   environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
+    KUBECONFIG: {{ kubeconfig_path }}
 
 - name: Get NodePort for ArgoCD
   kubernetes.core.k8s_info:
     kind: Service
     namespace: argocd
     name: argocd-server
-    kubeconfig: /home/ubuntu/.kube/config
+    kubeconfig: {{ kubeconfig_path }}
   register: argocd_svc_info
 
 # Note: argocd_server_ip can be set to the IP of any worker node
@@ -133,7 +133,7 @@
     namespace: argocd
     label_selectors:
       - app.kubernetes.io/name=argocd-server
-    kubeconfig: /home/ubuntu/.kube/config
+    kubeconfig: {{ kubeconfig_path }}
   register: argocd_pod_info
 
 - name: Set argocd_server_ip to node where pod runs
@@ -149,7 +149,7 @@
     --password "{{ argocd_initial_password }}"
     --insecure --grpc-web 
   environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
+    KUBECONFIG: {{ kubeconfig_path }}
   register: argocd_login_output
 
 - name: Update password for admin user
@@ -159,7 +159,7 @@
     --current-password "{{ argocd_initial_password }}"
     --new-password "{{ argocd_admin_password }}"
   environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
+    KUBECONFIG: {{ kubeconfig_path }}
   register: argocd_update_password_output
 
 
@@ -168,7 +168,7 @@
   ansible.builtin.command: >
     kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
   environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
+    KUBECONFIG: {{ kubeconfig_path }}
 
 
 
@@ -183,14 +183,14 @@
     src: /tmp/argocd-image-updater.yaml
     state: present
     namespace: argocd
-    kubeconfig: /home/ubuntu/.kube/config
+    kubeconfig: {{ kubeconfig_path }}
 
 # Note: The following tasks are commented out as they are not needed for the current setup.
 # They can be uncommented if you want to create a ConfigMap for ArgoCD Image Updater.
 # - name: Create ArgoCD Image Updater ConfigMap
 #   kubernetes.core.k8s:
 #     state: present
-#     kubeconfig: /home/ubuntu/.kube/config
+#     kubeconfig: {{ kubeconfig_path | }}
 #     definition:
 #       apiVersion: v1
 #       kind: ConfigMap
@@ -230,5 +230,5 @@
     namespace: argocd
     label_selectors:
       - app.kubernetes.io/name=argocd-image-updater
-    kubeconfig: /home/ubuntu/.kube/config
+    kubeconfig: {{ kubeconfig_path }}
   register: argocd_image_updater_pods
