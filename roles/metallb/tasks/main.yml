@@ -6,14 +6,12 @@
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
     dest: /tmp/metallb-install.yaml
-  
+
 - name: Apply MetalLB YAML manifests
   kubernetes.core.k8s:
     src: /tmp/metallb-install.yaml
     state: present
-    kubeconfig: {{ kubeconfig_path }}
-
-
+    kubeconfig: "{{ kubeconfig_path }}"
 
 - name: Copy MetalLB configuration
   ansible.builtin.copy:
@@ -29,17 +27,14 @@
   kubernetes.core.k8s:
     src: /tmp/metallb-config.yaml
     state: present
-    kubeconfig: {{ kubeconfig_path }}
-
-
+    kubeconfig: "{{ kubeconfig_path }}"
 
 - name: Get MetalLB pods
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: metallb-system
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
   register: metallb_pods
-  
 # - name: Wait till MetalLB Pods are Running & Ready
 #   kubernetes.core.k8s_info:
 #     kind: Pod

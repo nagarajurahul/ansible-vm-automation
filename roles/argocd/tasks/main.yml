@@ -17,8 +17,6 @@
     name: python3-kubernetes
     state: present
 
-
-
 # Note: Can be also installed using Helm chart
 - name: Create a Namespace for ArgoCD
   kubernetes.core.k8s:
@@ -26,7 +24,7 @@
     api_version: v1
     kind: Namespace
     state: present
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
 
 - name: Download ArgoCD manifests
   ansible.builtin.get_url:
@@ -38,15 +36,13 @@
     src: /tmp/argocd-install.yaml
     state: present
     namespace: argocd
-    kubeconfig: {{ kubeconfig_path }}
-
-
+    kubeconfig: "{{ kubeconfig_path }}"
 
 - name: Get ArgoCD pods
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: argocd
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
   register: argocd_pods
 
 # - name: Wait till each ArgoCD pod is Running & Ready
@@ -71,16 +67,13 @@
 #   delay: 5
 #   changed_when: false
 
-
-
-
 - name: Copy ArgoCD CLI install script
   ansible.builtin.copy:
     src: files/argocd_install.sh
     dest: /usr/local/bin/argocd_install.sh
-    mode: '0755'
+    mode: "0755"
 
-- name: Run script to install ArgoCD CLI 
+- name: Run script to install ArgoCD CLI
   ansible.builtin.command: /usr/local/bin/argocd_install.sh
   register: argocd_install_output
   changed_when: false
@@ -90,8 +83,6 @@
 #     that:
 #       - "'successfully' in argocd_install_output.stdout"
 
-
-
 # kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 # argocd admin initial-password -n argocd
 - name: Get ArgoCD server secret
@@ -99,27 +90,25 @@
     kind: Secret
     namespace: argocd
     name: argocd-initial-admin-secret
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
   register: argocd_secret
 
 - name: Set ArgoCD admin password fact
   ansible.builtin.set_fact:
     argocd_initial_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
 
-
-
 - name: Patch ArgoCD server to NodePort
   ansible.builtin.command: >
     kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
   environment:
-    KUBECONFIG: {{ kubeconfig_path }}
+    KUBECONFIG: "{{ kubeconfig_path }}"
 
 - name: Get NodePort for ArgoCD
   kubernetes.core.k8s_info:
     kind: Service
     namespace: argocd
     name: argocd-server
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
   register: argocd_svc_info
 
 # Note: argocd_server_ip can be set to the IP of any worker node
@@ -133,23 +122,21 @@
     namespace: argocd
     label_selectors:
       - app.kubernetes.io/name=argocd-server
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
   register: argocd_pod_info
 
 - name: Set argocd_server_ip to node where pod runs
   set_fact:
     argocd_server_ip: "{{ hostvars[argocd_pod_info.resources[0].spec.nodeName].ansible_host }}"
 
-
-
 - name: Login to ArgoCD CLI
   ansible.builtin.command: >
     argocd login {{ argocd_server_ip }}:{{ argocd_server_port }}
     --username admin
     --password "{{ argocd_initial_password }}"
-    --insecure --grpc-web 
+    --insecure --grpc-web
   environment:
-    KUBECONFIG: {{ kubeconfig_path }}
+    KUBECONFIG: "{{ kubeconfig_path }}"
   register: argocd_login_output
 
 - name: Update password for admin user
@@ -159,18 +146,14 @@
     --current-password "{{ argocd_initial_password }}"
     --new-password "{{ argocd_admin_password }}"
   environment:
-    KUBECONFIG: {{ kubeconfig_path }}
+    KUBECONFIG: "{{ kubeconfig_path }}"
   register: argocd_update_password_output
-
-
 
 - name: Patch ArgoCD server service back to ClusterIP
   ansible.builtin.command: >
     kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
   environment:
-    KUBECONFIG: {{ kubeconfig_path }}
-
-
+    KUBECONFIG: "{{ kubeconfig_path }}"
 
 # Note: Can be also installed using Helm chart
 - name: Download ArgoCD Image Updater manifests
@@ -183,7 +166,7 @@
     src: /tmp/argocd-image-updater.yaml
     state: present
     namespace: argocd
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
 
 # Note: The following tasks are commented out as they are not needed for the current setup.
 # They can be uncommented if you want to create a ConfigMap for ArgoCD Image Updater.
@@ -220,9 +203,7 @@
 #                   updateOnImageRepositoryChange: true
 #                   updateOnImageRepositoryTagChange: true
 #                   updateOnImageRepositoryDigestChange: true
-#                   updateOnImageRepositoryTagChange: true 
-                            
-
+#                   updateOnImageRepositoryTagChange: true
 
 - name: Get ArgoCD Image Updater pods
   kubernetes.core.k8s_info:
@@ -230,5 +211,5 @@
     namespace: argocd
     label_selectors:
       - app.kubernetes.io/name=argocd-image-updater
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
   register: argocd_image_updater_pods
