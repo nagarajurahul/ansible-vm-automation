@@ -21,6 +21,10 @@
     dest: /tmp/metallb-config.yaml
 
 # Wait for MetalLB to be ready before applying the configuration
+- name: Wait for MetalLB to stabilize
+  ansible.builtin.pause:
+    seconds: 60
+
 - name: Apply MetalLB configuration
   kubernetes.core.k8s:
     src: /tmp/metallb-config.yaml
