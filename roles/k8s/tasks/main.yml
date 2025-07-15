@@ -1,7 +1,7 @@
 ---
 - name: Install prerequisites for kubernetes
   ansible.builtin.package:
-    name: 
+    name:
       - ca-certificates
       - curl
       - gnupg
@@ -13,14 +13,14 @@
   ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 # Specific to Ubuntu
 - name: Add Kubernetes GPG key
   ansible.builtin.get_url:
     url: "https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key"
     dest: /etc/apt/keyrings/kubernetes.asc
-    mode: '0644'
+    mode: "0644"
 
 # Specific to Ubuntu
 - name: Convert Kubernetes GPG key to ASCII armored format
@@ -34,8 +34,6 @@
   ansible.builtin.apt_repository:
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /"
     state: present
-
-
 
 # Master nodes
 
@@ -59,8 +57,7 @@
       - kubeadm
       - kubectl
     allow_change_held_packages: false
-  when: "'masters' in group_names"  
-
+  when: "'masters' in group_names"
 
 # Worker nodes
 
@@ -82,9 +79,7 @@
       - kubelet
       - kubeadm
     allow_change_held_packages: false
-  when: "'workers' in group_names"  
-
-
+  when: "'workers' in group_names"
 
 - name: Enable and start kubelet service
   ansible.builtin.systemd:
@@ -93,8 +88,6 @@
     daemon_reload: true
     enabled: true
   register: kubelet_status
-
-
 
 # Master node K8s cluster initialization
 
@@ -107,13 +100,12 @@
   ansible.builtin.template:
     src: kubeadm-config.yaml.j2
     dest: /tmp/kubeadm-config.yaml
-  when: "'masters' in group_names"  
+  when: "'masters' in group_names"
 
 - name: Initialize Kubernetes control-plane with kubeadm config
   ansible.builtin.command: kubeadm init --config=/tmp/kubeadm-config.yaml
   register: kubeadm_init_output
   when: "'masters' in group_names"
-
 
 # Kube config setup for control plane node
 - name: Copy kubeconfig setup script to control plane node
@@ -122,7 +114,7 @@
     dest: /usr/local/bin/setup_kubectl.sh
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
   when: "'masters' in group_names"
 
 # If this file already exists, skip the task
@@ -131,9 +123,7 @@
   args:
     creates: /home/ubuntu/.kube/config
   when: "'masters' in group_names"
-  become_user: {{ ansible_user }}
-
-
+  become_user: "{{ ansible_user }}"
 
 # Apply Calico CNI plugin
 # If this file already exists, skip the task
@@ -143,24 +133,22 @@
   args:
     creates: /etc/cni/net.d/10-flannel.conflist
   when: "'masters' in group_names"
-  become_user: {{ ansible_user }}
+  become_user: "{{ ansible_user }}"
 
 - name: Wait for all system pods to be Ready
   ansible.builtin.command: >
     kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
   environment:
-    KUBECONFIG: {{ kubeconfig_path }}
+    KUBECONFIG: { { kubeconfig_path } }
   when: "'masters' in group_names"
-  become_user: {{ ansible_user }}
-
-
+  become_user: "{{ ansible_user }}"
 
 # Generate and save kubeadm join command for worker nodes
 - name: Get kubeadm join command from master
   ansible.builtin.command: kubeadm token create --print-join-command
   register: join_cmd
   when: "'masters' in group_names"
-  run_once: true  # Only fetch once even if multiple masters
+  run_once: true # Only fetch once even if multiple masters
 
 # - name: Save join command for worker nodes
 #   ansible.builtin.copy:
@@ -174,8 +162,6 @@
 #     mode: '0644'
 #   when: "'masters' in group_names"
 
-
-
 # Join worker nodes to Kubernetes cluster
 
 - name: Join worker nodes to Kubernetes cluster
@@ -188,16 +174,13 @@
   ansible.builtin.shell: |
     kubectl get nodes --no-headers | grep -v 'control-plane' | grep -c 'Ready'
   environment:
-    KUBECONFIG: {{ kubeconfig_path }}
+    KUBECONFIG: { { kubeconfig_path } }
   register: ready_nodes
   retries: 10
   delay: 15
   until: ready_nodes.stdout|int >= {{ groups['workers'] | length }}
   when: "'masters' in group_names"
-  become_user: {{ ansible_user }}
-
-
-
+  become_user: "{{ ansible_user }}"
 # - name: Wait for kubelet to become active
 #   ansible.builtin.command: systemctl is-active kubelet
 #   register: kubelet_check
