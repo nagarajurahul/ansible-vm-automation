@@ -126,7 +126,19 @@
 - name: Set facts for login
   set_fact:
     argocd_server_port: "{{ argocd_svc_info.resources[0].spec.ports[0].nodePort }}"
-    argocd_server_ip: "{{ hostvars[groups['workers'][0]].ansible_host }}"
+
+- name: Get argocd-server pod
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: argocd
+    label_selectors:
+      - app.kubernetes.io/name=argocd-server
+    kubeconfig: /home/ubuntu/.kube/config
+  register: argocd_pod_info
+
+- name: Set argocd_server_ip to node where pod runs
+  set_fact:
+    argocd_server_ip: "{{ hostvars[argocd_pod_info.resources[0].spec.nodeName].ansible_host }}"
 
 
 
