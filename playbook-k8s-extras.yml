@@ -15,10 +15,10 @@
   roles:
     - metallb
 
-- name: Install Traefik
-  hosts: masters
-  become: true
-  vars_files:
-    - vars/k8s.yml
-  roles:
-    - traefik
+# - name: Install Traefik
+#   hosts: masters
+#   become: true
+#   vars_files:
+#     - vars/k8s.yml
+#   roles:
+#     - traefik
