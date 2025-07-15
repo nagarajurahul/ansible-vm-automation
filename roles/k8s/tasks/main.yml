@@ -131,7 +131,7 @@
   args:
     creates: /home/ubuntu/.kube/config
   when: "'masters' in group_names"
-  become_user: ubuntu
+  become_user: {{ ansible_user }}
 
 
 
@@ -143,15 +143,15 @@
   args:
     creates: /etc/cni/net.d/10-flannel.conflist
   when: "'masters' in group_names"
-  become_user: ubuntu
+  become_user: {{ ansible_user }}
 
 - name: Wait for all system pods to be Ready
   ansible.builtin.command: >
     kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
   environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
+    KUBECONFIG: {{ kubeconfig_path }}
   when: "'masters' in group_names"
-  become_user: ubuntu
+  become_user: {{ ansible_user }}
 
 
 
@@ -188,13 +188,13 @@
   ansible.builtin.shell: |
     kubectl get nodes --no-headers | grep -v 'control-plane' | grep -c 'Ready'
   environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
+    KUBECONFIG: {{ kubeconfig_path }}
   register: ready_nodes
   retries: 10
   delay: 15
   until: ready_nodes.stdout|int >= {{ groups['workers'] | length }}
   when: "'masters' in group_names"
-  become_user: ubuntu
+  become_user: {{ ansible_user }}
 
 
 
