@@ -2,7 +2,7 @@
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/index.html
 
 # helm repo add traefik https://traefik.github.io/charts
-- name: Add Traefik repository
+- name: Add Traefik Helm repository
   kubernetes.core.helm_repository:
     name: traefik
     repo_url: https://traefik.github.io/charts
@@ -12,22 +12,14 @@
 # # Install in the namespace "traefik-v2"
 # helm install --namespace=traefik-v2 \
 #     traefik traefik/traefik
-- name: Deploy latest version of Traefik chart inside traefik-v2 namespace (and create it)
+- name: Deploy latest version of Traefik chart inside traefik namespace (and create it)
   kubernetes.core.helm:
     name: traefik
     chart_ref: traefik/traefik
-    release_namespace: traefik-v2
+    release_namespace: traefik
     create_namespace: true
     update_repo_cache: True
-    kubeconfig: /home/ubuntu/.kube/config
-    # values:
-    #   - dashboard.enabled=true
-    #   - dashboard.domain=traefik.local
-    #   - additionalArguments:
-    #       - "--providers.kubernetescrd"
-    #       - "--entrypoints.web.address=:80"
-    #       - "--entrypoints.websecure.address=:443"
-    #       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-    #       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"   
-    #       - "--entrypoints.websecure.http.tls=true"
-    #       - "--entrypoints.websecure.http.tls.certResolver=default"
+    kubeconfig: "{{ kubeconfig_path }}"
+    values:
+      service:
+        type: LoadBalancer
