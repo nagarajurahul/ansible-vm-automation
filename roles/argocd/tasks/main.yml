@@ -228,5 +228,7 @@
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: argocd
+    label_selectors:
+      - app.kubernetes.io/name=argocd-image-updater
     kubeconfig: /home/ubuntu/.kube/config
   register: argocd_image_updater_pods
