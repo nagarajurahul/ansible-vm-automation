@@ -1,5 +1,6 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/index.html
+# https://metallb.universe.tf/installation/
 
 - name: Download MetalLB manifests
   ansible.builtin.get_url:
@@ -28,7 +29,7 @@
 
 
 
-- name: Wait for MetalLB pods to be ready
+- name: Get MetalLB pods
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: metallb-system
