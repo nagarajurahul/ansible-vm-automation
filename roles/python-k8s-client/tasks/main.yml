@@ -1,5 +1,6 @@
 ---
-# Note: Error sayining externally managed package
+# Note: Error saying externally managed package
+# Belo commented lines dont work
 
 # - name: Install pip for Python 3
 #   ansible.builtin.package:
