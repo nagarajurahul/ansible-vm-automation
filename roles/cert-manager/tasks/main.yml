@@ -6,6 +6,7 @@
     version: "{{ gitops_infra_branch }}"
     force: yes
 
+# https://cert-manager.io/v1.6-docs/installation/helm/
 - name: Download cert-manager manifests
   ansible.builtin.get_url:
     url: https://github.com/cert-manager/cert-manager/releases/download/v1.6.3/cert-manager.crds.yaml
