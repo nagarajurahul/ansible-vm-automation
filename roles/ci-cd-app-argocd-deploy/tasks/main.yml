@@ -4,7 +4,8 @@
 - name: Create ArgoCD HTTPS secret for pulling manifests
   kubernetes.core.k8s:
     state: present
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
+
     definition:
       apiVersion: v1
       kind: Secret
@@ -22,7 +23,7 @@
 - name: Create ArgoCD SSH secret for ArgoCD Image Updater push
   kubernetes.core.k8s:
     state: present
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"
     definition:
       apiVersion: v1
       kind: Secret
@@ -36,18 +37,16 @@
         url: "{{ github_gitops_repo_ssh_url }}"
         sshPrivateKey: "{{ github_ssh_private_key }}"
 
-
-
 - name: Copy ArgoCD Application manifest
   ansible.builtin.copy:
     src: ci-cd-app.yaml
     dest: /tmp/ci-cd-app.yaml
     owner: ubuntu
     group: ubuntu
-    mode: '0644'
+    mode: "0644"
 
 - name: Create ArgoCD Application
   kubernetes.core.k8s:
     state: present
     src: /tmp/ci-cd-app.yaml
-    kubeconfig: {{ kubeconfig_path }}
+    kubeconfig: "{{ kubeconfig_path }}"

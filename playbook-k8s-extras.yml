@@ -1,6 +1,24 @@
 ---
-- name: Run K8s aliases setup
+# - name: Run K8s aliases setup
+#   hosts: masters
+#   become: true
+#   vars_files:
+#     - vars/k8s.yml
+#   roles:
+#     - k8s-aliases
+
+# - name: Install MetalLB
+#   hosts: masters
+#   become: true
+#   vars_files:
+#     - vars/k8s.yml
+#   roles:
+#     - metallb
+
+- name: Install Traefik
   hosts: masters
   become: true
+  vars_files:
+    - vars/k8s.yml
   roles:
-    - k8s-aliases
+    - traefik
