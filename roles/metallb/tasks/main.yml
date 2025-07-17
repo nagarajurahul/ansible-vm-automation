@@ -2,6 +2,7 @@
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/index.html
 # https://metallb.universe.tf/installation/
 
+# Update here regularly to match the latest MetalLB version
 - name: Download MetalLB manifests
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
@@ -13,15 +14,17 @@
     state: present
     kubeconfig: "{{ kubeconfig_path }}"
 
-- name: Copy MetalLB configuration
-  ansible.builtin.copy:
-    src: metallb-config.yaml
-    dest: /tmp/metallb-config.yaml
-
 # Wait for MetalLB to be ready before applying the configuration
 - name: Wait for MetalLB to stabilize
   ansible.builtin.pause:
     seconds: 60
+
+
+
+- name: Copy MetalLB configuration
+  ansible.builtin.copy:
+    src: metallb-config.yaml
+    dest: /tmp/metallb-config.yaml
 
 - name: Apply MetalLB configuration
   kubernetes.core.k8s:
@@ -29,12 +32,16 @@
     state: present
     kubeconfig: "{{ kubeconfig_path }}"
 
+
+
+
 - name: Get MetalLB pods
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: metallb-system
     kubeconfig: "{{ kubeconfig_path }}"
   register: metallb_pods
+
 # - name: Wait till MetalLB Pods are Running & Ready
 #   kubernetes.core.k8s_info:
 #     kind: Pod
