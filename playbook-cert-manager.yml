@@ -1,0 +1,9 @@
+---
+- name: Install cert-manager using ArgoCD
+  hosts: masters
+  become: true
+  vars_files:
+    - vars/gitops.yml
+    - vars/k8s.yml
+  roles:
+    - cert-manager
