@@ -22,6 +22,10 @@
     namespace: argocd
     kubeconfig: "{{ kubeconfig_path }}"
 
+- name: Wait 1 minute
+  ansible.builtin.pause:
+    seconds: 60
+
 - name: Get ArgoCD pods
   kubernetes.core.k8s_info:
     kind: Pod
@@ -112,6 +116,10 @@
 - name: Set argocd_server_ip to node where pod runs
   set_fact:
     argocd_server_ip: "{{ hostvars[argocd_pod_info.resources[0].spec.nodeName].ansible_host }}"
+
+- name: Wait 1 minute
+  ansible.builtin.pause:
+    seconds: 60
 
 - name: Login to ArgoCD CLI
   ansible.builtin.command: >
