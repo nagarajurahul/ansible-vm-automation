@@ -8,39 +8,39 @@
 
   tasks:
     - name: Install Kubernetes
-      include: playbook-k8s.yml
+      import_tasks: playbook-k8s.yml
 
     - name: Pause between steps
       pause:
         seconds: "{{ pause_between }}"
 
     - name: Configure K8s Aliases and Install Helm
-      include: playbook-k8s-extras.yml
+      import_tasks: playbook-k8s-extras.yml
 
     - name: Pause between steps
       pause:
         seconds: "{{ pause_between }}"
 
     - name: Configure MetalLB Networking and Install Traefik
-      include: playbook-k8s-networking.yml
+      import_tasks: playbook-k8s-networking.yml
 
     - name: Pause between steps
       pause:
         seconds: "{{ pause_between }}"
 
     - name: Install ArgoCD
-      include: playbook-argocd.yml
+      import_tasks: playbook-argocd.yml
 
     - name: Pause between steps
       pause:
         seconds: "{{ pause_between }}"
 
     - name: Install Cert-Manager
-      include: playbook-cert-manager.yml
+      import_tasks: playbook-cert-manager.yml
 
     - name: Pause between steps
       pause:
         seconds: "{{ pause_between }}"
 
     - name: Deploy CI/CD App with ArgoCD
-      include: playbook-install-ci-cd-app.yml
+      import_tasks: playbook-install-ci-cd-app.yml
