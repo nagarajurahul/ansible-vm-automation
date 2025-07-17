@@ -1,0 +1,14 @@
+---
+- name: Clone gitops-infra repository
+  ansible.builtin.git:
+    repo: "{{ gitops_infra_repo_url }}"
+    dest: "{{ gitops_infra_dest }}"
+    version: "{{ gitops_infra_branch }}"
+    force: yes
+
+- name: Create ArgoCD Application for cert-manager
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ gitops_infra_dest }}/{{ cert_manager_app_manifest }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  
