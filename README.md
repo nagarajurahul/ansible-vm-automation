@@ -14,13 +14,18 @@ Secrets managed by Vault/SOPS, not hardcoded# ansible-vm-automation
 Order of execution
 
 terraform_apply
+
 prechecks
 containerd
 kubernetes
+
 k8s-aliases
 helm
-metallb
-traefik
-argocd
-cert-manager
-ci-cd-app-argocd-deploy
+
+metallb - through manifests
+traefik - through helm
+
+argocd - through manifests
+
+cert-manager - through helm and argocd
+ci-cd-app-argocd-deploy - through helm and argocd

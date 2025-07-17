@@ -6,3 +6,9 @@
     - vars/k8s.yml
   roles:
     - k8s-aliases
+
+- name: Install Helm (on K8s Master nodes)
+  hosts: masters
+  become: true
+  roles:
+    - helm
