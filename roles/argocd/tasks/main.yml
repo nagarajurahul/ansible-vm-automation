@@ -1,22 +1,6 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
 
-# Note: Error sayining externally managed package
-
-# - name: Install pip for Python 3
-#   ansible.builtin.package:
-#     name: python3-pip
-#     state: present
-
-# - name: Install kubernetes python package
-#   ansible.builtin.pip:
-#     name: kubernetes
-
-- name: Install kubernetes python package
-  ansible.builtin.package:
-    name: python3-kubernetes
-    state: present
-
 # Note: Can be also installed using Helm chart
 - name: Create a Namespace for ArgoCD
   kubernetes.core.k8s:

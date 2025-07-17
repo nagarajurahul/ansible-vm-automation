@@ -1,4 +1,15 @@
 ---
+# Note: Error sayining externally managed package
+
+# - name: Install pip for Python 3
+#   ansible.builtin.package:
+#     name: python3-pip
+#     state: present
+
+# - name: Install kubernetes python package
+#   ansible.builtin.pip:
+#     name: kubernetes
+
 - name: Install kubernetes python package
   ansible.builtin.package:
     name: python3-kubernetes
