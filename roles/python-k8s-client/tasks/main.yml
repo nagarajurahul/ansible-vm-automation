@@ -1,0 +1,5 @@
+---
+- name: Install kubernetes python package
+  ansible.builtin.package:
+    name: python3-kubernetes
+    state: present

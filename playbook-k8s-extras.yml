@@ -12,3 +12,9 @@
   become: true
   roles:
     - helm
+
+- name: Install Python K8s client (on K8s Master nodes)
+  hosts: masters
+  become: true
+  roles:
+    - python-k8s-client
