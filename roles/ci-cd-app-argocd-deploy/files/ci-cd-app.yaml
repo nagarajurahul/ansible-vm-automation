@@ -15,7 +15,7 @@ metadata:
     argocd-image-updater.argoproj.io/write-back-target-branch: main
 spec:
   destination:
-    namespace: default
+    namespace: ci-cd-app
     server: https://kubernetes.default.svc
   project: default
   source:
