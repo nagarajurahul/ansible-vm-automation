@@ -5,6 +5,7 @@
   kubernetes.core.k8s:
     state: present
     kubeconfig: "{{ kubeconfig_path }}"
+
     definition:
       apiVersion: v1
       kind: Secret
