@@ -10,3 +10,17 @@ Ansible or CI/CD to orchestrate Terraform runs
 Templating to auto-generate .tfvars per VM
 
 Secrets managed by Vault/SOPS, not hardcoded# ansible-vm-automation
+
+Order of execution
+
+terraform_apply
+prechecks
+containerd
+kubernetes
+k8s-aliases
+helm
+metallb
+traefik
+argocd
+cert-manager
+ci-cd-app-argocd-deploy
