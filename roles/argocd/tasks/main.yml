@@ -2,6 +2,7 @@
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
 
 # Note: Can be also installed using Helm chart
+
 - name: Create a Namespace for ArgoCD
   kubernetes.core.k8s:
     name: argocd
@@ -25,6 +26,9 @@
 - name: Wait 1 minute
   ansible.builtin.pause:
     seconds: 60
+
+
+
 
 - name: Get ArgoCD pods
   kubernetes.core.k8s_info:
@@ -55,21 +59,25 @@
 #   delay: 5
 #   changed_when: false
 
+
+
 - name: Copy ArgoCD CLI install script
   ansible.builtin.copy:
-    src: files/argocd_install.sh
-    dest: /usr/local/bin/argocd_install.sh
+    src: files/install-argocd-cli.sh
+    dest: /tmp/install-argocd-cli.sh
     mode: "0755"
 
 - name: Run script to install ArgoCD CLI
-  ansible.builtin.command: /usr/local/bin/argocd_install.sh
-  register: argocd_install_output
+  ansible.builtin.command: /tmp/install-argocd-cli.sh
+  register: argocd_cli_install_output
   changed_when: false
 
 # - name: Assert ArgoCD installation was successful
 #   ansible.builtin.assert:
 #     that:
-#       - "'successfully' in argocd_install_output.stdout"
+#       - "'successfully' in argocd_cli_install_output.stdout"
+
+
 
 # kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 # argocd admin initial-password -n argocd
@@ -91,7 +99,7 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
 
-- name: Get NodePort for ArgoCD
+- name: Get ArgoCD server service
   kubernetes.core.k8s_info:
     kind: Service
     namespace: argocd
@@ -99,12 +107,11 @@
     kubeconfig: "{{ kubeconfig_path }}"
   register: argocd_svc_info
 
-# Note: argocd_server_ip can be set to the IP of any worker node
-- name: Set facts for login
-  set_fact:
+- name: Set ArgoCD server port fact 
+  ansible.builtin.set_fact:
     argocd_server_port: "{{ argocd_svc_info.resources[0].spec.ports[0].nodePort }}"
 
-- name: Get argocd-server pod
+- name: Get ArgoCD server pod
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: argocd
@@ -113,6 +120,8 @@
     kubeconfig: "{{ kubeconfig_path }}"
   register: argocd_pod_info
 
+# Note: argocd_server_ip can be set to the IP of any worker node
+# This will dynamically set the IP of the node where the ArgoCD server pod is running
 - name: Set argocd_server_ip to node where pod runs
   set_fact:
     argocd_server_ip: "{{ hostvars[argocd_pod_info.resources[0].spec.nodeName].ansible_host }}"
@@ -120,6 +129,9 @@
 - name: Wait 1 minute
   ansible.builtin.pause:
     seconds: 60
+
+
+
 
 - name: Login to ArgoCD CLI
   ansible.builtin.command: >
@@ -146,6 +158,9 @@
     kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+
+
+
 
 # Note: Can be also installed using Helm chart
 - name: Download ArgoCD Image Updater manifests
