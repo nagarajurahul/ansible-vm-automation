@@ -51,7 +51,7 @@
 #     wait: yes
 #     name: "{{ item.metadata.name }}"
 #     namespace: argocd
-#     kubeconfig: {{ kubeconfig_path | }}
+#     kubeconfig: "{{ kubeconfig_path }}"
 #   loop: "{{ argocd_pods.resources }}"
 #   register: pod_status
 #   until: >
@@ -173,7 +173,7 @@
 # - name: Create ArgoCD Image Updater ConfigMap
 #   kubernetes.core.k8s:
 #     state: present
-#     kubeconfig: {{ kubeconfig_path | }}
+#     kubeconfig: "{{ kubeconfig_path }}"
 #     definition:
 #       apiVersion: v1
 #       kind: ConfigMap

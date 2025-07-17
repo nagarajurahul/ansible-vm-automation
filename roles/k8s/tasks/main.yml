@@ -146,7 +146,7 @@
   ansible.builtin.command: >
     kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
   environment:
-    KUBECONFIG: { { kubeconfig_path } }
+    KUBECONFIG: "{{ kubeconfig_path }}"
   when: "'masters' in group_names"
   become_user: "{{ ansible_user }}"
 
@@ -182,7 +182,7 @@
   ansible.builtin.shell: |
     kubectl get nodes --no-headers | grep -v 'control-plane' | grep -c 'Ready'
   environment:
-    KUBECONFIG: { { kubeconfig_path } }
+    KUBECONFIG: "{{ kubeconfig_path }}"
   register: ready_nodes
   retries: 10
   delay: 15
