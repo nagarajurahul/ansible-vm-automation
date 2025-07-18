@@ -37,16 +37,26 @@
         url: "{{ github_gitops_repo_ssh_url }}"
         sshPrivateKey: "{{ github_ssh_private_key }}"
 
-- name: Copy ArgoCD Application manifest
-  ansible.builtin.copy:
-    src: ci-cd-app.yaml
-    dest: /tmp/ci-cd-app.yaml
-    owner: ubuntu
-    group: ubuntu
-    mode: "0644"
+
+
+
+# - name: Copy ArgoCD Application manifest
+#   ansible.builtin.copy:
+#     src: ci-cd-app.yaml
+#     dest: /tmp/ci-cd-app.yaml
+#     owner: ubuntu
+#     group: ubuntu
+#     mode: "0644"
+
+- name: Clone gitops-apps repository
+  ansible.builtin.git:
+    repo: "{{ gitops_apps_repo_url }}"
+    dest: "{{ gitops_apps_dest }}"
+    version: "{{ gitops_apps_branch }}"
+    force: yes
 
 - name: Create ArgoCD Application
   kubernetes.core.k8s:
     state: present
-    src: /tmp/ci-cd-app.yaml
+    src:"{{ gitops_apps_dest }}/{{ ci-cd-app_app_manifest }}"
     kubeconfig: "{{ kubeconfig_path }}"
