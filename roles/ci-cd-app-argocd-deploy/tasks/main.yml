@@ -58,5 +58,5 @@
 - name: Create ArgoCD Application
   kubernetes.core.k8s:
     state: present
-    src:"{{ gitops_apps_dest }}/{{ ci-cd-app_app_manifest }}"
+    src: "{{ gitops_apps_dest }}/{{ ci-cd-app_app_manifest }}"
     kubeconfig: "{{ kubeconfig_path }}"
