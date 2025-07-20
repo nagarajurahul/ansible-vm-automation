@@ -1,11 +1,11 @@
 ---
-name: Install secrets prior to deploying GoFlight application
-hosts: masters
-become: true
-vars_files:
-  - vars/github.yml
-  - vars/k8s.yml
-  - vars/gitops.yml
-  - vars/k8s-goflights-secrets.yml
-roles:
-  - secrets
+- name: Install secrets prior to deploying GoFlight application
+  hosts: masters
+  become: true
+  vars_files:
+    - vars/github.yml
+    - vars/k8s.yml
+    - vars/gitops.yml
+    - vars/k8s-goflights-secrets.yml
+  roles:
+    - secrets
