@@ -6,6 +6,5 @@
     - vars/github.yml
     - vars/k8s.yml
     - vars/gitops.yml
-    - vars/k8s-goflights-secrets.yml
   roles:
     - secrets
