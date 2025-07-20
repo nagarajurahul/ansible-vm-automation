@@ -1,5 +1,5 @@
 ---
-name: Install secrets prior to deploying applications
+name: Install secrets prior to deploying GoFlight application
 hosts: masters
 become: true
 vars_files:
