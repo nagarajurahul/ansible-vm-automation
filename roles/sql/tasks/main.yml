@@ -1,0 +1,13 @@
+---
+- name: Clone gitops-apps repository
+  ansible.builtin.git:
+    repo: "{{ gitops_apps_repo_url }}"
+    dest: "{{ gitops_apps_dest }}"
+    version: "{{ gitops_apps_branch }}"
+    force: yes
+
+- name: Create ArgoCD Application
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ gitops_apps_dest }}/{{ sql_app_manifest }}"
+    kubeconfig: "{{ kubeconfig_path }}"
