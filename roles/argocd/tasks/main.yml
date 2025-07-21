@@ -153,11 +153,13 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   register: argocd_update_password_output
 
-- name: Patch ArgoCD server service back to ClusterIP
-  ansible.builtin.command: >
-    kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
+# Check this
+# Uncomment if needed to patch ArgoCD server service back to ClusterIP
+# - name: Patch ArgoCD server service back to ClusterIP
+#   ansible.builtin.command: >
+#     kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
+#   environment:
+#     KUBECONFIG: "{{ kubeconfig_path }}"
 
 
 
