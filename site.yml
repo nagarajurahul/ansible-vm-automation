@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define pause duration in seconds
-PAUSE_BETWEEN=60
+PAUSE_BETWEEN=10
 
 # Helper to print sections
 print_banner() {
