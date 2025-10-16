@@ -13,7 +13,7 @@ Secrets managed by Vault/SOPS, not hardcoded# ansible-vm-automation
 
 Order of execution
 
-terraform_apply
+terraform_apply_esxi
 
 prechecks
 containerd
