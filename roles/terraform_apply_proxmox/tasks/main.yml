@@ -1,0 +1,25 @@
+- name: Run terraform init
+  command: terraform init
+  args:
+    chdir: ../terraform-proxmox-multiple-vm/
+
+- name: Run terraform validate
+  command: terraform validate
+  args:
+    chdir: ../terraform-proxmox-multiple-vm/
+
+- name: Run terraform apply
+  command: terraform apply -auto-approve
+  args:
+    chdir: ../terraform-proxmox-multiple-vm/
+
+- name: Get Terraform output (Ansible inventory)
+  command: terraform output -raw ansible_inventory
+  register: tf_inventory
+  args:
+    chdir: ../terraform-proxmox-multiple-vm/
+
+- name: Write Ansible inventory to file
+  copy:
+    content: "{{ tf_inventory.stdout }}"
+    dest: ./ansible_vms_inventory.ini
