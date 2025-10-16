@@ -2,7 +2,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vars/vms.yml
+    - vars/terraform.tfvars.json
   roles:
     - terraform_apply_proxmox
 

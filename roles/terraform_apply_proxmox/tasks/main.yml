@@ -1,25 +1,39 @@
+---
+- name: Copy tfvars file into Terraform working directory
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/vars/terraform.tfvars.json"
+    dest: "{{ playbook_dir }}/../terraform-proxmox-multiple-vm/terraform.tfvars.json"
+    mode: "0644"
+
 - name: Run terraform init
   command: terraform init
   args:
-    chdir: ../terraform-proxmox-multiple-vm/
+    chdir: "{{ playbook_dir }}/../terraform-proxmox-multiple-vm/"
 
 - name: Run terraform validate
   command: terraform validate
   args:
-    chdir: ../terraform-proxmox-multiple-vm/
+    chdir: "{{ playbook_dir }}/../terraform-proxmox-multiple-vm/"
 
 - name: Run terraform apply
   command: terraform apply -auto-approve
   args:
-    chdir: ../terraform-proxmox-multiple-vm/
+    chdir: "{{ playbook_dir }}/../terraform-proxmox-multiple-vm/"
 
 - name: Get Terraform output (Ansible inventory)
   command: terraform output -raw ansible_inventory
   register: tf_inventory
   args:
-    chdir: ../terraform-proxmox-multiple-vm/
+    chdir: "{{ playbook_dir }}/../terraform-proxmox-multiple-vm/"
 
 - name: Write Ansible inventory to file
   copy:
     content: "{{ tf_inventory.stdout }}"
-    dest: ./ansible_vms_inventory.ini
+    dest: "{{ playbook_dir }}./ansible_vms_inventory.ini"
+    mode: "0644"
+
+- name: Display Terraform output summary
+  debug:
+    msg: |
+      Terraform provisioning completed successfully.
+      Inventory written to {{ playbook_dir }}/ansible_vms_inventory.ini
