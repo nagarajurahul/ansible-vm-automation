@@ -1,0 +1,133 @@
+---
+# roles/firewall/tasks/main.yml
+# Configures UFW for Kubernetes control-plane and worker nodes
+
+- name: Ensure UFW is installed
+  apt:
+    name: ufw
+    state: present
+    update_cache: yes
+  become: true
+
+# Ansible needs to have SSH continued
+
+# - name: Set default policies
+#   ufw:
+#     state: enabled
+#     policy: deny
+#     direction: incoming
+#   become: true
+
+- name: Allow outgoing traffic
+  ufw:
+    direction: outgoing
+    policy: allow
+  become: true
+
+- name: Allow SSH
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+  become: true
+
+#######################################################################
+# CONTROL PLANE RULES
+#######################################################################
+- name: Configure UFW for control-plane nodes
+  when: "'masters' in group_names"
+  block:
+  - name: Allow Kubernetes API server
+    ufw:
+      rule: allow
+      port: "6443"
+      proto: tcp
+      from_ip: 192.168.0.0/24
+    become: true
+
+  - name: Allow etcd (only needed if multi-master setup)
+    ufw:
+      rule: allow
+      port: "2379:2380"
+      proto: tcp
+      from_ip: 192.168.0.0/24
+    become: true
+
+  - name: Allow Kubelet API
+    ufw:
+      rule: allow
+      port: "10250"
+      proto: tcp
+      from_ip: 192.168.0.0/24
+    become: true
+
+  - name: Allow Flannel VXLAN overlay
+    ufw:
+      rule: allow
+      port: "8472"
+      proto: udp
+      from_ip: 192.168.0.0/24
+    become: true
+
+  - name: Allow NodePort range
+    ufw:
+      rule: allow
+      port: "30000:32767"
+      proto: tcp
+      from_ip: 192.168.0.0/24
+    become: true
+
+#######################################################################
+# WORKER NODE RULES
+#######################################################################
+- name: Configure UFW for worker nodes
+  when: "'workers' in group_names"
+  block:
+  - name: Allow Kubelet API
+    ufw:
+      rule: allow
+      port: "10250"
+      proto: tcp
+      from_ip: 192.168.0.0/24
+    become: true
+
+  - name: Allow kube-proxy health check
+    ufw:
+      rule: allow
+      port: "10256"
+      proto: tcp
+      from_ip: 192.168.0.0/24
+    become: true
+
+  - name: Allow Flannel VXLAN overlay
+    ufw:
+      rule: allow
+      port: "8472"
+      proto: udp
+      from_ip: 192.168.0.0/24
+    become: true
+
+  - name: Allow NodePort range
+    ufw:
+      rule: allow
+      port: "30000:32767"
+      proto: tcp
+      from_ip: 192.168.0.0/24
+    become: true
+
+#######################################################################
+# FINALIZE & VERIFY
+#######################################################################
+- name: Reload UFW
+  command: ufw reload
+  changed_when: false
+  become: true
+
+- name: Show active UFW rules
+  command: ufw status verbose
+  register: ufw_status
+  changed_when: false
+  become: true
+
+- debug:
+    msg: "{{ ufw_status.stdout_lines }}"
