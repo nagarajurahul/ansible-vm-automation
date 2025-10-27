@@ -14,13 +14,13 @@ print_banner() {
 
 # Run each playbook with delay
 
-print_banner "Configuing UFW" 
-ansible-playbook -i k8s.ini playbook-ufw.yml 
-sleep $PAUSE_BETWEEN
+# print_banner "Configuing UFW" 
+# ansible-playbook -i k8s.ini playbook-ufw.yml 
+# sleep $PAUSE_BETWEEN
 
-print_banner "Installing Kubernetes"
-ansible-playbook -i k8s.ini playbook-k8s.yml
-sleep $PAUSE_BETWEEN
+# print_banner "Installing Kubernetes"
+# ansible-playbook -i k8s.ini playbook-k8s.yml
+# sleep $PAUSE_BETWEEN
 
 print_banner "Setting up K8s Aliases and Installing Helm"
 ansible-playbook -i k8s.ini playbook-k8s-extras.yml
