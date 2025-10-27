@@ -79,6 +79,16 @@
 
 
 
+# Wait for the ArgoCD initial-admin-secret to exist
+- name: Wait for ArgoCD admin secret to be created
+  ansible.builtin.command: >
+    kubectl -n argocd get secret argocd-initial-admin-secret
+  register: argocd_secret_check
+  until: argocd_secret_check.rc == 0
+  retries: 10 # retries every 15 s
+  delay: 15
+  changed_when: false
+
 # kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 # argocd admin initial-password -n argocd
 - name: Get ArgoCD server secret
