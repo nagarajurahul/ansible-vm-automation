@@ -14,7 +14,7 @@ print_banner() {
 
 # Run each playbook with delay
 
-print_banner "Configuing UFW" 
+print_banner "Configuring UFW" 
 ansible-playbook -i k8s.ini playbook-ufw.yml 
 sleep $PAUSE_BETWEEN
 
