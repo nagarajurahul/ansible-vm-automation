@@ -20,6 +20,26 @@
     seconds: 60
 
 
+# Wait until MetalLB controller pods are ready (dynamic readiness check)
+- name: Wait for MetalLB controller pods to be ready
+  ansible.builtin.command: >
+    kubectl wait --namespace metallb-system --for=condition=Ready pod -l component=controller --timeout=180s
+  register: metallb_controller_ready
+  until: metallb_controller_ready.rc == 0
+  retries: 3
+  delay: 15
+  changed_when: false
+
+# Wait until MetalLB webhook service is available (ensures webhook reachable)
+- name: Wait for MetalLB webhook service to respond
+  ansible.builtin.shell: |
+    kubectl -n metallb-system get svc metallb-webhook-service --no-headers
+  register: webhook_check
+  until: webhook_check.rc == 0
+  retries: 5
+  delay: 10
+  changed_when: false
+
 
 - name: Copy MetalLB configuration
   ansible.builtin.copy:
@@ -41,6 +61,11 @@
     namespace: metallb-system
     kubeconfig: "{{ kubeconfig_path }}"
   register: metallb_pods
+
+- name: Show MetalLB pod names and statuses
+  ansible.builtin.debug:
+    msg: "{{ metallb_pods.resources | map(attribute='metadata.name') | list }}"
+
 
 # - name: Wait till MetalLB Pods are Running & Ready
 #   kubernetes.core.k8s_info:
