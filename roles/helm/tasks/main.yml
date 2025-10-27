@@ -15,25 +15,19 @@
     state: directory
     mode: '0755'
 
-# Specific to Ubuntu
-- name: Install Helm key
-  ansible.builtin.get_url:
-    url: https://baltocdn.com/helm/signing.asc
-    dest: /etc/apt/keyrings/helm.asc
+- name: Download and add Helm GPG key
+  ansible.builtin.shell: |
+    curl -fsSL https://packages.buildkite.com/helm-linux/helm-debian/gpgkey | \
+    gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
+  args:
+    creates: /usr/share/keyrings/helm.gpg
+
+- name: Add Helm apt repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/helm-stable-debian.list
+    content: |
+      deb [signed-by=/usr/share/keyrings/helm.gpg] https://packages.buildkite.com/helm-linux/helm-debian/any/ any main
     mode: '0644'
-
-# Specific to Ubuntu
-- name: Convert Helm GPG key to ASCII armored format
-  ansible.builtin.command: >
-    gpg --batch --yes --dearmor
-    -o /etc/apt/keyrings/helm-apt-keyring.gpg
-    /etc/apt/keyrings/helm.asc
-
-# Specific to Ubuntu
-- name: Add Helm repository
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/helm-apt-keyring.gpg] https://baltocdn.com/helm/stable/debian/ all main"
-    state: present
 
 - name: Install Helm
   ansible.builtin.package:
