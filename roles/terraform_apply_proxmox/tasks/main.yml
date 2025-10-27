@@ -29,7 +29,7 @@
 - name: Write Ansible inventory to file
   copy:
     content: "{{ tf_inventory.stdout }}"
-    dest: "{{ playbook_dir }}./ansible_vms_inventory.ini"
+    dest: "{{ playbook_dir }}/ansible_vms_inventory.ini"
     mode: "0644"
 
 - name: Display Terraform output summary
