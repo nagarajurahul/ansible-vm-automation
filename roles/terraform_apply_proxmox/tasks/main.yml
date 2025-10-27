@@ -21,7 +21,7 @@
     chdir: "{{ playbook_dir }}/../terraform-proxmox-multiple-vm/"
 
 - name: Get Terraform output (Ansible inventory)
-  command: terraform output -raw ansible_inventory
+  command: terraform output -raw ansible_inventory_ini
   register: tf_inventory
   args:
     chdir: "{{ playbook_dir }}/../terraform-proxmox-multiple-vm/"
