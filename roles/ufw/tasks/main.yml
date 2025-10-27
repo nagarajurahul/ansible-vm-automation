@@ -1,5 +1,4 @@
 ---
-# roles/firewall/tasks/main.yml
 # Configures UFW for Kubernetes control-plane and worker nodes
 
 - name: Ensure UFW is installed
@@ -9,7 +8,7 @@
     update_cache: yes
   become: true
 
-# Ansible needs to have SSH continued
+# Ansible needs to have SSH access continued
 
 # - name: Set default policies
 #   ufw:
