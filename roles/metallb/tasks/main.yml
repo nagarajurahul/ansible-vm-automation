@@ -40,6 +40,17 @@
   delay: 10
   changed_when: false
 
+# Ensure the mandatory MetalLB memberlist secret exists (v0.14+ requirement)
+- name: Ensure MetalLB memberlist secret exists
+  ansible.builtin.shell: |
+    kubectl -n metallb-system get secret memberlist ||
+    kubectl create secret generic -n metallb-system memberlist \
+      --from-literal=secretkey="$(openssl rand -base64 128)"
+  register: metallb_secret
+  changed_when: "'created' in metallb_secret.stdout"
+  failed_when: metallb_secret.rc not in [0, 1]
+
+
 
 - name: Copy MetalLB configuration
   ansible.builtin.copy:
