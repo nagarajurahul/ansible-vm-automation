@@ -14,6 +14,18 @@
     state: present
     kubeconfig: "{{ kubeconfig_path }}"
 
+# Ensure the mandatory MetalLB memberlist secret exists (v0.14+ requirement)
+- name: Ensure MetalLB memberlist secret exists
+  ansible.builtin.shell: |
+    kubectl --kubeconfig {{ kubeconfig_path }} -n metallb-system get secret memberlist ||
+    kubectl --kubeconfig {{ kubeconfig_path }} create secret generic -n metallb-system memberlist \
+      --from-literal=secretkey="$(openssl rand -base64 128)"
+  register: metallb_secret
+  changed_when: "'created' in metallb_secret.stdout"
+  failed_when: metallb_secret.rc not in [0, 1]
+
+
+
 # Wait for MetalLB to be ready before applying the configuration
 - name: Wait for MetalLB to stabilize
   ansible.builtin.pause:
@@ -38,16 +50,6 @@
   retries: 5
   delay: 10
   changed_when: false
-
-# Ensure the mandatory MetalLB memberlist secret exists (v0.14+ requirement)
-- name: Ensure MetalLB memberlist secret exists
-  ansible.builtin.shell: |
-    kubectl --kubeconfig {{ kubeconfig_path }} -n metallb-system get secret memberlist ||
-    kubectl --kubeconfig {{ kubeconfig_path }} create secret generic -n metallb-system memberlist \
-      --from-literal=secretkey="$(openssl rand -base64 128)"
-  register: metallb_secret
-  changed_when: "'created' in metallb_secret.stdout"
-  failed_when: metallb_secret.rc not in [0, 1]
 
 
 
