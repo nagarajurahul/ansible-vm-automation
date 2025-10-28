@@ -20,10 +20,9 @@
     seconds: 60
 
 
-# Wait until MetalLB controller pods are ready (dynamic readiness check)
 - name: Wait for MetalLB controller pods to be ready
   ansible.builtin.command: >
-    kubectl wait --namespace metallb-system --for=condition=Ready pod -l component=controller --timeout=180s
+    kubectl --kubeconfig {{ kubeconfig_path }} wait --namespace metallb-system --for=condition=Ready pod -l component=controller --timeout=180s
   register: metallb_controller_ready
   until: metallb_controller_ready.rc == 0
   retries: 3
@@ -33,7 +32,7 @@
 # Wait until MetalLB webhook service is available (ensures webhook reachable)
 - name: Wait for MetalLB webhook service to respond
   ansible.builtin.shell: |
-    kubectl -n metallb-system get svc metallb-webhook-service --no-headers
+    kubectl --kubeconfig {{ kubeconfig_path }} -n metallb-system get svc metallb-webhook-service --no-headers
   register: webhook_check
   until: webhook_check.rc == 0
   retries: 5
@@ -43,8 +42,8 @@
 # Ensure the mandatory MetalLB memberlist secret exists (v0.14+ requirement)
 - name: Ensure MetalLB memberlist secret exists
   ansible.builtin.shell: |
-    kubectl -n metallb-system get secret memberlist ||
-    kubectl create secret generic -n metallb-system memberlist \
+    kubectl --kubeconfig {{ kubeconfig_path }} -n metallb-system get secret memberlist ||
+    kubectl --kubeconfig {{ kubeconfig_path }} create secret generic -n metallb-system memberlist \
       --from-literal=secretkey="$(openssl rand -base64 128)"
   register: metallb_secret
   changed_when: "'created' in metallb_secret.stdout"
