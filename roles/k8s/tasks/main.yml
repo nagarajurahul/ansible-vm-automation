@@ -186,10 +186,10 @@
   register: ready_nodes
   retries: 10
   delay: 15
-  until: ready_nodes.stdout|int >= {{ groups['workers'] | length }}
+  until: ready_nodes.stdout | int >= groups['workers'] | length
   when: "'masters' in group_names"
   become_user: "{{ ansible_user }}"
-  
+
 # - name: Wait for kubelet to become active
 #   ansible.builtin.command: systemctl is-active kubelet
 #   register: kubelet_check
