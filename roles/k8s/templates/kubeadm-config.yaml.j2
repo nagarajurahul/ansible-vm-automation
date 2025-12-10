@@ -5,18 +5,21 @@ localAPIEndpoint:
   advertiseAddress: "{{ control_plane_ip }}"
   bindPort: 6443
 nodeRegistration:
-  name: "linux-1"
+  name: "{{ inventory_hostname }}"
   kubeletExtraArgs:
     - name: cloud-provider
       value: external
-    - name: authentication-token-webhook
-      value: "true"
 
 ---
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
-kubernetesVersion: stable
+kubernetesVersion: "v1.33.0"
 controlPlaneEndpoint: "{{ control_plane_ip }}:6443"
+networking:
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+  dnsDomain: "cluster.local"
+
 apiServer:
   extraArgs:
     - name: enable-admission-plugins
@@ -29,47 +32,35 @@ apiServer:
       value: "10"
     - name: audit-log-maxsize
       value: "100"
-    - name: feature-gates
-      value: AllAlpha=false
+
 controllerManager:
   extraArgs:
     - name: node-cidr-mask-size
       value: "24"
     - name: bind-address
-      value: 0.0.0.0
+      value: "0.0.0.0"
     - name: configure-cloud-routes
       value: "false"
+
 scheduler:
   extraArgs:
-    - name: leader-elect
-      value: "true"
     - name: bind-address
-      value: 0.0.0.0
-networking:
-  podSubnet: "10.244.0.0/16"
-  serviceSubnet: "10.96.0.0/12"
-  dnsDomain: "cluster.local"
+      value: "0.0.0.0"
+
 etcd:
   local:
     dataDir: /var/lib/etcd
-timeoutForControlPlane: 4m0s
 
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
-syncFrequency: "1m"
-resolvConf: /run/systemd/resolve/resolv.conf
-staticPodPath: /etc/kubernetes/manifests
 failSwapOn: true
-readOnlyPort: 0
 
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
-mode: ipvs
+mode: "ipvs"
 conntrack:
   maxPerCore: 32768
   min: 131072
-  tcpCloseWaitTimeout: 1h
-  tcpEstablishedTimeout: 24h
