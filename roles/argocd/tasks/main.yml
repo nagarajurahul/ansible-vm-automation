@@ -79,12 +79,12 @@
 
 
 
-# Wait until ArgoCD controller pods are ready
-- name: Wait for ArgoCD controller pods to be ready
-  ansible.builtin.command: >
-    kubectl --kubeconfig {{ kubeconfig_path }} wait --for=condition=Ready pod -l app.kubernetes.io/part-of=argocd -n argocd --timeout=300s
-  register: argocd_ready
-  changed_when: false
+# # Wait until ArgoCD controller pods are ready
+# - name: Wait for ArgoCD controller pods to be ready
+#   ansible.builtin.command: >
+#     kubectl --kubeconfig {{ kubeconfig_path }} wait --for=condition=Ready pod -l app.kubernetes.io/part-of=argocd -n argocd --timeout=300s
+#   register: argocd_ready
+#   changed_when: false
 
 # Wait for the ArgoCD initial-admin-secret to exist
 - name: Wait for ArgoCD admin secret to be created
