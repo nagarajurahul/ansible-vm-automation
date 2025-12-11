@@ -23,6 +23,6 @@
   hosts: all
   become: true
   vars_files:
-  - vars/k8s.yml
+    - vars/k8s.yml
   roles:
-  - k8s-initialise-cluster
+    - k8s-initialise-cluster
