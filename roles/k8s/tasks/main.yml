@@ -3,7 +3,6 @@
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 
 # Pre-req for K8s cluster initialization
-
 - name: Set control plane IP dynamically
   ansible.builtin.set_fact:
     control_plane_ip: "{{ ansible_host }}"
@@ -17,12 +16,10 @@
 
 
 # Master node K8s cluster initialization
-
 - name: Initialize Kubernetes control-plane with kubeadm config
   ansible.builtin.command: kubeadm init --config=/tmp/kubeadm-config.yaml
   register: kubeadm_init_output
   when: "'masters' in group_names"
-
 
 # Kube config setup for control plane node
 - name: Copy kubeconfig setup script to control plane node
@@ -32,18 +29,18 @@
     owner: root
     group: root
     mode: "0755"
-
   when: "'masters' in group_names"
 
 # If this file already exists, skip the task
 - name: Configure kubectl for the control plane node
   ansible.builtin.command: /usr/local/bin/setup_kubectl.sh
   args:
-    creates: /home/ubuntu/.kube/config
+    creates: "{{ kubeconfig_path }}"
   when: "'masters' in group_names"
   become_user: "{{ ansible_user }}"
 
-# Apply Calico CNI plugin
+
+# Apply CNI plugin for networking
 # If this file already exists, skip the task
 - name: Apply Flannel CNI plugin
   ansible.builtin.command: >
@@ -53,6 +50,7 @@
   when: "'masters' in group_names"
   become_user: "{{ ansible_user }}"
 
+# Wait for all pods to be running
 - name: Wait for all system pods to be Ready
   ansible.builtin.command: >
     kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
@@ -68,21 +66,9 @@
   register: join_cmd
   when: "'masters' in group_names"
 
-# - name: Save join command for worker nodes
-#   ansible.builtin.copy:
-#     dest: /join-command.txt
-#     content: |
-#       {% for line in kubeadm_init_output.stdout_lines %}
-#       {% if 'kubeadm join' in line %}
-#       {{ line }}
-#       {% endif %}
-#       {% endfor %}
-#     mode: '0644'
-#   when: "'masters' in group_names"
 
 
 # Join worker nodes to Kubernetes cluster
-
 - name: Join worker nodes to Kubernetes cluster
   ansible.builtin.shell: "{{ hostvars[groups['masters'][0]].join_cmd.stdout }}"
   args:
@@ -100,18 +86,3 @@
   until: ready_nodes.stdout | int >= groups['workers'] | length
   when: "'masters' in group_names"
   become_user: "{{ ansible_user }}"
-
-# - name: Wait for kubelet to become active
-#   ansible.builtin.command: systemctl is-active kubelet
-#   register: kubelet_check
-#   retries: 5
-#   delay: 2
-#   until: kubelet_check.stdout == "active"
-
-# - name: Assert kubelet is active and running
-#   ansible.builtin.assert:
-#     that:
-#       - kubelet_check.stdout == "active"
-#     fail_msg: "Kubelet is not running!"
-#     success_msg: "Kubelet is active and running."
-
