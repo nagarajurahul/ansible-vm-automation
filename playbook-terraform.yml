@@ -5,4 +5,3 @@
     - vars/terraform.tfvars.json
   roles:
     - terraform_apply_proxmox
-

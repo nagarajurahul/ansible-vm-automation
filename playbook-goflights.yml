@@ -8,3 +8,4 @@
     - vars/gitops.yml
   roles:
     - goflights
+    
