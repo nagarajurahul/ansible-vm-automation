@@ -27,7 +27,12 @@
 # Specific to Ubuntu
 - name: Convert Kubernetes GPG key to ASCII armored format
   ansible.builtin.command: >
-    gpg --batch --true --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /etc/apt/keyrings/kubernetes.asc
+    gpg --batch --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /etc/apt/keyrings/kubernetes.asc
+
+- name: Set permissions on Kubernetes GPG keyring
+  ansible.builtin.file:
+    path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    mode: "0644"
 
 # Specific to Ubuntu
 - name: Add Kubernetes repository
@@ -78,6 +83,9 @@
   when: "'workers' in group_names"
 
 # Start kubelet on all nodes
+# Kindly check and verify
+# Before enabling kubelet, ensure /etc/containerd/config.toml uses below 
+# SystemdCgroup = true
 - name: Enable and start kubelet service
   ansible.builtin.systemd:
     name: kubelet
