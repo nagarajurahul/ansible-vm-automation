@@ -126,7 +126,7 @@
     kubeconfig: "{{ kubeconfig_path }}"
   register: argocd_svc_info
 
-- name: Set ArgoCD server port fact 
+- name: Set ArgoCD server port fact
   ansible.builtin.set_fact:
     argocd_server_port: "{{ argocd_svc_info.resources[0].spec.ports[0].nodePort }}"
 

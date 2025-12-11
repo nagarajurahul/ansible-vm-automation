@@ -28,4 +28,3 @@
     state: present
     src: "{{ gitops_infra_dest }}/{{ cert_manager_app_manifest }}"
     kubeconfig: "{{ kubeconfig_path }}"
-  
