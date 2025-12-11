@@ -8,4 +8,3 @@
     - vars/gitops.yml
   roles:
     - sql
-    
