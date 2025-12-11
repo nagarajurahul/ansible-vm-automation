@@ -33,7 +33,8 @@
 # sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
 # This will comment
 - name: Comment out swap lines in /etc/fstab
-  ansible.builtin.shell:   sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
+  ansible.builtin.shell: >
+    sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
 
 # # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html#ansible-collections-ansible-builtin-lineinfile-module
 # # This will remove the swap line from /etc/fstab
@@ -99,7 +100,7 @@
     owner: root
     group: root
     mode: '0644'
-    force: no
+    force: false
 
 - name: Apply sysctl settings
   ansible.builtin.command: sysctl --system
