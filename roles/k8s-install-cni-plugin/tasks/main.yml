@@ -1,0 +1,75 @@
+---
+# Apply CNI plugin for networking (Calico)
+# https://docs.tigera.io/calico/latest/getting-started/kubernetes/quickstart
+
+# Prerequisite
+- name: Ensure /etc/cni/net.d exists
+  ansible.builtin.file:
+    path: /etc/cni/net.d
+    state: directory
+    mode: "0755"
+  when: "'masters' in group_names"
+
+# Runs only once per cluster
+- name: Install Calico Tigera Operator
+  ansible.builtin.command: >
+    kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.2/manifests/tigera-operator.yaml
+  args:
+    creates: /etc/cni/net.d/calico.operator.installed
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
+  register: calico_operator
+
+- name: Mark Calico operator installed
+  ansible.builtin.file:
+    path: /etc/cni/net.d/calico.operator.installed
+    state: touch
+  when: calico_operator.changed
+
+- name: Install Calico Custom Resources
+  ansible.builtin.command: >
+    kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.2/manifests/custom-resources.yaml
+  args:
+    creates: /etc/cni/net.d/calico.resources.installed
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
+  register: calico_crs
+
+- name: Mark Calico custom resources installed
+  ansible.builtin.file:
+    path: /etc/cni/net.d/calico.resources.installed
+    state: touch
+  when: calico_crs.changed
+
+# -------------------------------------------------------------
+# Wait for Pods to initialize
+# -------------------------------------------------------------
+- name: Wait 60 seconds for Pods to finish initialization
+  ansible.builtin.wait_for:
+    timeout: 60
+  when: calico_crs.changed
+
+# Wait for all pods to be running
+- name: Wait for all system pods to be Ready
+  ansible.builtin.command: >
+    kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
+
+- name: Wait for workers to be Ready
+  ansible.builtin.shell: |
+    kubectl get nodes --no-headers | grep -v 'control-plane' | grep -c 'Ready'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: ready_nodes
+  retries: 10
+  delay: 15
+  until: ready_nodes.stdout | int >= groups['workers'] | length
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"

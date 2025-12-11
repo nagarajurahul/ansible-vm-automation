@@ -23,6 +23,8 @@
   register: kubeadm_init_output
   when: "'masters' in group_names"
 
+
+
 # Kube config setup for control plane node
 - name: Copy kubeconfig setup script to control plane node
   ansible.builtin.copy:
@@ -42,27 +44,6 @@
   become_user: "{{ ansible_user }}"
 
 
-# Apply CNI plugin for networking
-# If this file already exists, skip the task
-- name: Apply Flannel CNI plugin
-  ansible.builtin.command: >
-    kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  args:
-    creates: /etc/cni/net.d/10-flannel.conflist
-  when: "'masters' in group_names"
-  become_user: "{{ ansible_user }}"
-
-# Wait for all pods to be running
-- name: Wait for all system pods to be Ready
-  ansible.builtin.command: >
-    kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  when: "'masters' in group_names"
-  become_user: "{{ ansible_user }}"
-
 
 # Generate and save kubeadm join command for worker nodes
 - name: Get kubeadm join command from master
@@ -70,23 +51,9 @@
   register: join_cmd
   when: "'masters' in group_names"
 
-
-
 # Join worker nodes to Kubernetes cluster
 - name: Join worker nodes to Kubernetes cluster
   ansible.builtin.shell: "{{ hostvars[groups['masters'][0]].join_cmd.stdout }}"
   args:
     creates: /etc/kubernetes/kubelet.conf
   when: "'workers' in group_names"
-
-- name: Wait for workers to be Ready
-  ansible.builtin.shell: |
-    kubectl get nodes --no-headers | grep -v 'control-plane' | grep -c 'Ready'
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  register: ready_nodes
-  retries: 10
-  delay: 15
-  until: ready_nodes.stdout | int >= groups['workers'] | length
-  when: "'masters' in group_names"
-  become_user: "{{ ansible_user }}"
