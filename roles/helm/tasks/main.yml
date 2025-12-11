@@ -6,7 +6,7 @@
       - curl
       - gnupg
     state: present
-    update_cache: yes
+    update_cache: true
 
 # Specific to Ubuntu
 - name: Ensure /etc/apt/keyrings directory exists
@@ -33,4 +33,4 @@
   ansible.builtin.package:
     name: helm
     state: present
-    update_cache: yes
+    update_cache: true
