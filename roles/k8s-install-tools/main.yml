@@ -20,7 +20,7 @@
 # Specific to Ubuntu
 - name: Add Kubernetes GPG key
   ansible.builtin.get_url:
-    url: "https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key"
+    url: "https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/Release.key"
     dest: /etc/apt/keyrings/kubernetes.asc
     mode: "0644"
 
@@ -37,7 +37,7 @@
 # Specific to Ubuntu
 - name: Add Kubernetes repository
   ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /"
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/ /"
     state: present
 
 # Master nodes
