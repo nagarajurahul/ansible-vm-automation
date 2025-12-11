@@ -8,7 +8,7 @@
       - curl
       - gnupg
     state: present
-    update_cache: yes
+    update_cache: true
 
 # Specific to Ubuntu
 - name: Ensure /etc/apt/keyrings directory exists
@@ -27,7 +27,7 @@
 # Specific to Ubuntu
 - name: Convert Kubernetes GPG key to ASCII armored format
   ansible.builtin.command: >
-    gpg --batch --yes --dearmor
+    gpg --batch --true --dearmor
     -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     /etc/apt/keyrings/kubernetes.asc
 
@@ -48,7 +48,7 @@
       - kubeadm
       - kubectl
     state: present
-    update_cache: yes
+    update_cache: true
   when: "'masters' in group_names"
 
 # Specific to Ubuntu
@@ -69,7 +69,7 @@
       - kubelet
       - kubeadm
     state: present
-    update_cache: yes
+    update_cache: true
   when: "'workers' in group_names"
 
 # Specific to Ubuntu
