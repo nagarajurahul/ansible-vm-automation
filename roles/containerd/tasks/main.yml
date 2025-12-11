@@ -1,12 +1,12 @@
 ---
 - name: Install pre-requisites for containerd
   ansible.builtin.package:
-    name: 
-    - ca-certificates
-    - curl
-    - gnupg
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
     state: present
-    update_cache: yes
+    update_cache: true
 
 # Specific to Ubuntu
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#ansible-collections-ansible-builtin-file-module
@@ -37,7 +37,7 @@
   ansible.builtin.package:
     name: containerd.io
     state: present
-    update_cache: yes
+    update_cache: true
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html#ansible-collections-ansible-builtin-copy-module
 - name: Create containerd configuration file
@@ -47,7 +47,7 @@
     owner: root
     group: root
     mode: '0644'
-    backup: yes    
+    backup: true    
 
 
 
