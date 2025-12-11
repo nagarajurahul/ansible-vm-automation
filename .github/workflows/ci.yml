@@ -23,7 +23,7 @@ jobs:
       # 1) YAML LINT (entire repo)
       # -----------------------------
       - name: Run yamllint
-        run: yamllint .
+        run: yamllint -c .yamllint.yml .
 
       # -----------------------------
       # 2) ANSIBLE-LINT (roles + playbooks)
