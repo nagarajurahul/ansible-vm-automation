@@ -1,4 +1,6 @@
 ---
+# This follows the official documentation provided by Kubernetes to install using kubeadm
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 - name: Install prerequisites for kubernetes
   ansible.builtin.package:
     name:
@@ -22,7 +24,6 @@
     dest: /etc/apt/keyrings/kubernetes.asc
     mode: "0644"
 
-
 # Specific to Ubuntu
 - name: Convert Kubernetes GPG key to ASCII armored format
   ansible.builtin.command: >
@@ -35,6 +36,7 @@
   ansible.builtin.apt_repository:
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /"
     state: present
+
 
 
 # Master nodes
@@ -51,8 +53,6 @@
 
 # Specific to Ubuntu
 - name: Mark Kubernetes packages to hold (control plane)
-  # ansible.builtin.shell: apt-mark hold kubelet kubeadm kubectl
-  # warn: false
   ansible.builtin.apt:
     name:
       - kubelet
@@ -74,8 +74,6 @@
 
 # Specific to Ubuntu
 - name: Mark Kubernetes packages to hold (worker nodes)
-  # ansible.builtin.shell: apt-mark hold kubelet kubeadm
-  # warn: false
   ansible.builtin.apt:
     name:
       - kubelet
@@ -83,7 +81,7 @@
     allow_change_held_packages: false
   when: "'workers' in group_names"
 
-
+# Start kubelet on all nodes
 - name: Enable and start kubelet service
   ansible.builtin.systemd:
     name: kubelet
