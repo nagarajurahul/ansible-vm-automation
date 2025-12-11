@@ -18,6 +18,8 @@
 # Master node K8s cluster initialization
 - name: Initialize Kubernetes control-plane with kubeadm config
   ansible.builtin.command: kubeadm init --config=/tmp/kubeadm-config.yaml
+  args:
+    creates: /etc/kubernetes/admin.conf
   register: kubeadm_init_output
   when: "'masters' in group_names"
 
@@ -45,6 +47,8 @@
 - name: Apply Flannel CNI plugin
   ansible.builtin.command: >
     kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
   args:
     creates: /etc/cni/net.d/10-flannel.conflist
   when: "'masters' in group_names"
