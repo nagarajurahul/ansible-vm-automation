@@ -1,9 +1,10 @@
+---
 name: Ansible CI
 
 on:
   pull_request:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   lint:
@@ -11,32 +12,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repo
-      uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-    - name: Install Ansible + linters
-      run: |
-        pip install ansible ansible-lint yamllint
+      - name: Install Ansible + linters
+        run: |
+          pip install ansible ansible-lint yamllint
 
-    # -----------------------------
-    # 1) YAML LINT (entire repo)
-    # -----------------------------
-    - name: Run yamllint
-      run: yamllint .
+      # -----------------------------
+      # 1) YAML LINT (entire repo)
+      # -----------------------------
+      - name: Run yamllint
+        run: yamllint .
 
-    # -----------------------------
-    # 2) ANSIBLE-LINT (roles + playbooks)
-    # -----------------------------
-    - name: Run ansible-lint
-      run: ansible-lint .
+      # -----------------------------
+      # 2) ANSIBLE-LINT (roles + playbooks)
+      # -----------------------------
+      - name: Run ansible-lint
+        run: ansible-lint .
 
-    # --------------------------------------------
-    # 3) SYNTAX CHECK - automatically find all playbooks
-    # --------------------------------------------
-    - name: Syntax-check all playbooks
-      run: |
-        echo "Finding playbooks..."
-        for playbook in $(find playbooks -maxdepth 1 -type f -name "*.yml"); do
-          echo "➡️ Checking syntax for: $playbook"
-          ansible-playbook --syntax-check "$playbook" || exit 1
-        done
+      # --------------------------------------------
+      # 3) SYNTAX CHECK - automatically find all playbooks
+      # --------------------------------------------
+      - name: Syntax-check all playbooks
+        run: |
+          echo "Finding playbooks..."
+          for playbook in $(find playbooks -maxdepth 1 -type f -name "*.yml"); do
+            echo "➡️ Checking syntax for: $playbook"
+            ansible-playbook --syntax-check "$playbook" || exit 1
+          done
