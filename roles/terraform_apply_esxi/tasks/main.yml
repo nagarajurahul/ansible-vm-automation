@@ -1,3 +1,4 @@
+---
 - name: Create terraform.tfvars.json from template
   template:
     src: tfvars.json.j2

@@ -18,7 +18,7 @@
     chart_ref: traefik/traefik
     release_namespace: traefik
     create_namespace: true
-    update_repo_cache: True
+    update_repo_cache: true
     kubeconfig: "{{ kubeconfig_path }}"
     values:
       service:

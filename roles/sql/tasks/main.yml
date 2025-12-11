@@ -4,7 +4,7 @@
     repo: "{{ gitops_apps_repo_url }}"
     dest: "{{ gitops_apps_dest }}"
     version: "{{ gitops_apps_branch }}"
-    force: yes
+    force: true
 
 - name: Create ArgoCD Application
   kubernetes.core.k8s:
