@@ -21,7 +21,7 @@
     repo: "{{ gitops_infra_repo_url }}"
     dest: "{{ gitops_infra_dest }}"
     version: "{{ gitops_infra_branch }}"
-    force: yes
+    force: true
 
 - name: Create ArgoCD Application for cert-manager
   kubernetes.core.k8s:
