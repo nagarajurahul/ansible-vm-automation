@@ -1,3 +1,4 @@
+---
 # roles/terraform_apply/tasks/main.yml
 - name: Apply Terraform for each VM
   shell: |
@@ -15,4 +16,3 @@
   args:
     chdir: ../terraform-vmware-esxi-single-vm/
   loop: "{{ vm_list }}"
-
