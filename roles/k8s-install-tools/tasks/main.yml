@@ -61,7 +61,7 @@
     - kubelet
     - kubeadm
     - kubectl
-    allow_change_held_packages: false
+    state: hold
   when: "'masters' in group_names"
 
 # Worker nodes
@@ -81,7 +81,7 @@
     name:
     - kubelet
     - kubeadm
-    allow_change_held_packages: false
+    state: hold
   when: "'workers' in group_names"
 
 # Start kubelet on all nodes
