@@ -7,4 +7,4 @@
     - vars/k8s.yml
     - vars/gitops.yml
   roles:
-    - ci-cd-app-argocd-deploy
+    - argocd-deploy-ci-cd-app
