@@ -5,8 +5,8 @@
 - name: Copy K8s aliases file
   ansible.builtin.copy:
     src: k8s_aliases.sh
-    dest: /tmp/k8s_aliases.sh
-    mode: "0644"
+    dest: /etc/profile.d/k8s_aliases.sh
+    mode: "0755"
 
 # - name: Source K8s aliases file
 #   ansible.builtin.shell: |
@@ -16,17 +16,11 @@
 #   become_user: "{{ ansible_user }}"}
 
 # Idempotency: Ensure the aliases file is sourced in .bashrc exactly once
-- name: Ensure aliases file is sourced in .bashrc exactly once
+- name: Ensure aliases file is sourced in user's .bashrc
   ansible.builtin.lineinfile:
-    path: ~/.bashrc
-    line: "source /tmp/k8s_aliases.sh"
+    path: "/home/{{ ansible_user }}/.bashrc"
+    regexp: 'source /etc/profile\.d/k8s_aliases\.sh'
+    line: 'source /etc/profile.d/k8s_aliases.sh'
+    state: present
+  become: true
   become_user: "{{ ansible_user }}"
-
-- name: Ensure K8s aliases are available in the current session
-  ansible.builtin.shell: |
-    source ~/.bashrc
-    echo "K8s aliases loaded successfully."
-  args:
-    executable: /bin/bash
-  become_user: "{{ ansible_user }}"
-  register: k8s_aliases_output
