@@ -13,7 +13,7 @@ nodeRegistration:
 ---
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
-kubernetesVersion: "v1.33.0"
+kubernetesVersion: "{{ k8s_repo_version }}"
 controlPlaneEndpoint: "{{ control_plane_ip }}:6443"
 networking:
   podSubnet: "10.244.0.0/16"
