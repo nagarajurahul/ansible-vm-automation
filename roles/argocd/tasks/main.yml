@@ -13,7 +13,7 @@
 
 - name: Download ArgoCD manifests
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    url: {{ argocd_manifests_url }}
     dest: /tmp/argocd-install.yaml
 
 - name: Apply ArgoCD YAML
@@ -156,7 +156,7 @@
 # Note: Can be also installed using Helm chart
 - name: Download ArgoCD Image Updater manifests
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/manifests/install.yaml
+    url: {{ argocd_image_updater_config_url }}
     dest: /tmp/argocd-image-updater.yaml
 
 - name: Apply ArgoCD Image Updater manifests
