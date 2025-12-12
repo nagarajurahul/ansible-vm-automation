@@ -3,7 +3,7 @@
   hosts: all
   become: true
   roles:
-    - prechecks
+    - k8s-prechecks
 
 - name: Install and Configure Container Runtime (containerd)
   hosts: all
