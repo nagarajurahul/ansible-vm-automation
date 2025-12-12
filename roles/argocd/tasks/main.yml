@@ -30,34 +30,17 @@
 
 
 
-- name: Get ArgoCD pods
-  kubernetes.core.k8s_info:
-    kind: Pod
-    namespace: argocd
-    kubeconfig: "{{ kubeconfig_path }}"
-  register: argocd_pods
-
-# - name: Wait till each ArgoCD pod is Running & Ready
-#   kubernetes.core.k8s_info:
-#     kind: Pod
-#     wait: yes
-#     name: "{{ item.metadata.name }}"
-#     namespace: argocd
-#     kubeconfig: "{{ kubeconfig_path }}"
-#   loop: "{{ argocd_pods.resources }}"
-#   register: pod_status
-#   until: >
-#     pod_status.results[ansible_loop.index0].resources[0].status.phase == "Running"
-#     and
-#     (
-#       pod_status.results[ansible_loop.index0].resources[0].status.containerStatuses
-#       | selectattr('ready', 'equalto', true)
-#       | list
-#       | length
-#     ) == (pod_status.results[ansible_loop.index0].resources[0].status.containerStatuses | length)
-#   retries: 30
-#   delay: 5
-#   changed_when: false
+- name: Wait for all ArgoCD pods to be Running
+  ansible.builtin.shell: |
+    kubectl get pods -n argo-system --no-headers | awk '{print $2}' | grep -vE "^[0-9]+/[0-9]+$" && exit 1 || exit 0
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: argocd_ready
+  retries: 30
+  delay: 10
+  until: argocd_ready.rc == 0
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
 
 
 
@@ -72,24 +55,14 @@
   register: argocd_cli_install_output
   changed_when: false
 
-# - name: Assert ArgoCD installation was successful
-#   ansible.builtin.assert:
-#     that:
-#       - "'successfully' in argocd_cli_install_output.stdout"
 
-
-
-# # Wait until ArgoCD controller pods are ready
-# - name: Wait for ArgoCD controller pods to be ready
-#   ansible.builtin.command: >
-#     kubectl --kubeconfig {{ kubeconfig_path }} wait --for=condition=Ready pod -l app.kubernetes.io/part-of=argocd -n argocd --timeout=300s
-#   register: argocd_ready
-#   changed_when: false
 
 # Wait for the ArgoCD initial-admin-secret to exist
 - name: Wait for ArgoCD admin secret to be created
   ansible.builtin.command: >
-    kubectl --kubeconfig {{ kubeconfig_path }} -n argocd get secret argocd-initial-admin-secret
+    kubectl -n argocd get secret argocd-initial-admin-secret
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
   register: argocd_secret_check
   until: argocd_secret_check.rc == 0
   retries: 10
@@ -151,15 +124,14 @@
 
 
 
-
+# Both argocd._server_ip and argocd_server_port are set as fact using tasks in this file above
+# argocd_initial_password is retrieved in tasks in this file above.
 - name: Login to ArgoCD CLI
   ansible.builtin.command: >
     argocd login {{ argocd_server_ip }}:{{ argocd_server_port }}
     --username admin
     --password "{{ argocd_initial_password }}"
     --insecure --grpc-web
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
   register: argocd_login_output
 
 - name: Update password for admin user
@@ -168,11 +140,9 @@
     --account admin
     --current-password "{{ argocd_initial_password }}"
     --new-password "{{ argocd_admin_password }}"
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
   register: argocd_update_password_output
 
-# Check this
+# Check this in production
 # Uncomment if needed to patch ArgoCD server service back to ClusterIP
 # - name: Patch ArgoCD server service back to ClusterIP
 #   ansible.builtin.command: >
@@ -233,11 +203,15 @@
 #                   updateOnImageRepositoryDigestChange: true
 #                   updateOnImageRepositoryTagChange: true
 
-- name: Get ArgoCD Image Updater pods
-  kubernetes.core.k8s_info:
-    kind: Pod
-    namespace: argocd
-    label_selectors:
-      - app.kubernetes.io/name=argocd-image-updater
-    kubeconfig: "{{ kubeconfig_path }}"
-  register: argocd_image_updater_pods
+# Check this and try - app.kubernetes.io/name=argocd-image-updater for labels
+- name: Wait for all ArgoCD pods to be Running
+  ansible.builtin.shell: |
+    kubectl get pods -n argo-system --no-headers | awk '{print $2}' | grep -vE "^[0-9]+/[0-9]+$" && exit 1 || exit 0
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: argocd_ready
+  retries: 30
+  delay: 10
+  until: argocd_ready.rc == 0
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
