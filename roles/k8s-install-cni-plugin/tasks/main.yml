@@ -88,11 +88,23 @@
 # -----------------------------------------------------------------------------
 # Patch IPPool CIDR to match kubeadm (IMPORTANT)
 # -----------------------------------------------------------------------------
-- name: Patch Calico IPPool to match podSubnet (10.244.0.0/16)
+# Need to change the patch command depending on CNI plugin and version
+- name: Patch Calico IPPool to match podSubnet
   ansible.builtin.command: >
-    kubectl patch installation default
-    --type merge
-    -p '{"spec":{"calicoNetwork":{"ipPools":[{"cidr":"10.244.0.0/16","encapsulation":"VXLANCrossSubnet","natOutgoing":"Enabled","nodeSelector":"all()"}]}}}'
+    kubectl patch installation default --type merge -p '{
+          "spec": {
+            "calicoNetwork": {
+              "ipPools": [
+                {
+                  "cidr": "{{ calico_pod_cidr }}",
+                  "encapsulation": "{{ calico_encapsulation }}",
+                  "natOutgoing": "{{ calico_nat_outgoing }}",
+                  "nodeSelector": "{{ calico_node_selector }}"
+                }
+              ]
+            }
+          }
+        }'
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   when: "'masters' in group_names"
