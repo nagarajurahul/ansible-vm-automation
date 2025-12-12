@@ -28,6 +28,14 @@
     state: touch
   when: calico_operator.changed
 
+# -------------------------------------------------------------
+# Wait for CRDs to initialize
+# -------------------------------------------------------------
+- name: Wait 120 seconds for CRDs to finish initialization
+  ansible.builtin.wait_for:
+    timeout: 120
+  when: calico_operator.changed
+
 - name: Install Calico Custom Resources
   ansible.builtin.command: >
     kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.2/manifests/custom-resources.yaml
