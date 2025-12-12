@@ -39,7 +39,7 @@ ansible-playbook -i k8s.ini playbook-cert-manager.yml
 sleep $PAUSE_BETWEEN
 
 print_banner "Install secrets prior to deploying GoFlight application"
-ansible-playbook -i k8s.ini playbook-pre-app.yml
+ansible-playbook -i k8s.ini playbook-secrets.yml
 sleep $PAUSE_BETWEEN
 
 print_banner "Deploying CI/CD App with ArgoCD"
