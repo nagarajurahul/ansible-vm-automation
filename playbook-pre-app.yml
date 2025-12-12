@@ -3,9 +3,6 @@
   hosts: masters
   become: true
   vars_files:
-    - vars/github.yml
     - vars/k8s.yml
-    - vars/gitops.yml
-    - vars/docker.yml
   roles:
     - secrets
