@@ -18,68 +18,33 @@
   register: lts_check_output
   changed_when: false
 
-# # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fail_module.html#ansible-collections-ansible-builtin-fail-module
-# - name: Fail if kernel is not LTS
-#   ansible.builtin.fail:
-#     msg: "❌ This node is not running an LTS kernel. Kubernetes installation requires LTS."
-#   when: "'NOT an LTS' in lts_check_output.stdout"
-
-
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
 - name: Disable swap
   ansible.builtin.command: swapoff -a
+  args:
+    warn: false
 
 # sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
 # This will comment
-- name: Comment out swap lines in /etc/fstab
-  ansible.builtin.shell: >
-    sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
+# - name: Comment out swap lines in /etc/fstab
+#   ansible.builtin.shell: >
+#     sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
 
-# # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html#ansible-collections-ansible-builtin-lineinfile-module
-# # This will remove the swap line from /etc/fstab
-# # Note: This is optional, as commenting out the line is sufficient for disabling swap.
-# # Uncomment the following task if you want to ensure swap is completely removed from /etc/f
-# - name: Ensure swap is disabled in /etc/fstab
-#   ansible.builtin.lineinfile:
-#     path: /etc/fstab
-#     regexp: '^([^#].*\sswap\s.*)$'
-#     state: absent
-#   become: true
-
-
-#   # This task uses a heredoc to write the sysctl parameters directly to the file
-#   # This is an alternative to using the copy module.
-# - name: Set Kubernetes sysctl parameters (using shell)
-#   ansible.builtin.shell: |
-#     cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
-# net.bridge.bridge-nf-call-iptables  = 1
-# net.bridge.bridge-nf-call-ip6tables = 1
-# net.ipv4.ip_forward                 = 1
-# EOF
-#   register: sysctl_output
-#   become: true
-
-
-
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html#ansible-collections-ansible-builtin-template-module
-# This task uses a Jinja2 template to create the sysctl configuration file.
-# Uncomment the following task if you want to use a template for sysctl parameters.
-# Make sure to create a template file named k8s.conf.j2 in the templates directory
-# of your role.
-# - name: Set Kubernetes sysctl parameters (using template)
-#   ansible.builtin.template:
-#     src: k8s.conf.j2
-#     dest: /etc/sysctl.d/k8s.conf
-#     owner: root
-#     group: root
-#     mode: '0644'
-#   become: true
+- name: Comment out swap entries in /etc/fstab (idempotent)
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^\s*[^#].*\sswap\s'
+    line: '# \g<0>'
+    state: present
+    backrefs: true
 
 
 
 - name: Load br_netfilter kernel module
   ansible.builtin.command: modprobe br_netfilter
+  args:
+    warn: false
 
 - name: Ensure br_netfilter is loaded on every boot
   ansible.builtin.lineinfile:
@@ -90,7 +55,7 @@
 
 
 
-- name: Set Kubernetes sysctl parameters (using copy only if it doesn't exist)
+- name: Set Kubernetes sysctl parameters
   ansible.builtin.copy:
     dest: /etc/sysctl.d/k8s.conf
     content: |
@@ -100,27 +65,7 @@
     owner: root
     group: root
     mode: '0644'
-    force: false
+    force: true
 
 - name: Apply sysctl settings
   ansible.builtin.command: sysctl --system
-
-# - name: Check required sysctl values
-#   ansible.builtin.shell: |
-#     sysctl -n {{ item }}
-#   loop:
-#     - net.bridge.bridge-nf-call-iptables
-#     - net.bridge.bridge-nf-call-ip6tables
-#     - net.ipv4.ip_forward
-#   register: sysctl_results
-#   changed_when: false
-#   become: true
-
-# - name: Fail if any sysctl value is not 1
-#   ansible.builtin.assert:
-#     that:
-#       - "sysctl_results.results[0].stdout == '1'"
-#       - "sysctl_results.results[1].stdout == '1'"
-#       - "sysctl_results.results[2].stdout == '1'"
-#     fail_msg: "❌ One or more sysctl values are not correctly set for Kubernetes networking."
-#     success_msg: "✅ All required sysctl values are correctly set."
