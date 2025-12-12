@@ -4,6 +4,7 @@ kind: InitConfiguration
 localAPIEndpoint:
   advertiseAddress: "{{ control_plane_ip }}"
   bindPort: 6443
+
 nodeRegistration:
   name: "{{ inventory_hostname }}"
   kubeletExtraArgs:
@@ -15,28 +16,29 @@ apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
 kubernetesVersion: "{{ k8s_kubeadm_version }}"
 controlPlaneEndpoint: "{{ control_plane_ip }}:6443"
+
 networking:
-  podSubnet: "10.244.0.0/16"
-  serviceSubnet: "10.96.0.0/12"
-  dnsDomain: "cluster.local"
+  podSubnet: "{{ k8s_pod_subnet }}"
+  serviceSubnet: "{{ k8s_service_subnet }}"
+  dnsDomain: "{{ k8s_dns_domain }}"
 
 apiServer:
   extraArgs:
     - name: enable-admission-plugins
       value: NodeRestriction,NamespaceLifecycle,ServiceAccount,DefaultStorageClass,ResourceQuota
     - name: audit-log-path
-      value: /var/log/kubernetes/audit.log
+      value: "{{ k8s_audit_log_path }}"
     - name: audit-log-maxage
-      value: "30"
+      value: "{{ k8s_audit_log_max_age }}"
     - name: audit-log-maxbackup
-      value: "10"
+      value: "{{ k8s_audit_log_max_backup }}"
     - name: audit-log-maxsize
-      value: "100"
+      value: "{{ k8s_audit_log_max_size }}"
 
 controllerManager:
   extraArgs:
     - name: node-cidr-mask-size
-      value: "24"
+      value: "{{ k8s_node_cidr_mask_size }}"
     - name: bind-address
       value: "0.0.0.0"
     - name: configure-cloud-routes
@@ -49,13 +51,13 @@ scheduler:
 
 etcd:
   local:
-    dataDir: /var/lib/etcd
+    dataDir: {{ etcd_data_dir }}
 
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
-failSwapOn: true
+failSwapOn: {{ k8s_fail_swap_on }}
 
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
