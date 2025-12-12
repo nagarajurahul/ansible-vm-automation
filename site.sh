@@ -22,7 +22,7 @@ print_banner "Installing Kubernetes"
 ansible-playbook -i k8s.ini playbook-k8s.yml
 sleep $PAUSE_BETWEEN
 
-print_banner "Setting up K8s Aliases and Installing Helm"
+print_banner "Setting up K8s Aliases, Python Client and Installing Helm"
 ansible-playbook -i k8s.ini playbook-k8s-extras.yml
 sleep $PAUSE_BETWEEN
 
@@ -49,6 +49,7 @@ sleep $PAUSE_BETWEEN
 print_banner "Deploying SQL with ArgoCD"
 ansible-playbook -i k8s.ini playbook-sql.yml
 sleep 60
+# Need extra time for SQL to boot up
 
 print_banner "Deploying GoFlights Appication with ArgoCD"
 ansible-playbook -i k8s.ini playbook-goflights.yml
