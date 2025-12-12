@@ -43,7 +43,7 @@ ansible-playbook -i k8s.ini playbook-pre-app.yml
 sleep $PAUSE_BETWEEN
 
 print_banner "Deploying CI/CD App with ArgoCD"
-ansible-playbook -i k8s.ini playbook-install-ci-cd-app.yml
+ansible-playbook -i k8s.ini playbook-argocd-ci-cd-app.yml
 sleep $PAUSE_BETWEEN
 
 print_banner "Deploying SQL with ArgoCD"
