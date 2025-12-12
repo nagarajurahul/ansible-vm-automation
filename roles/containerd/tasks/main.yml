@@ -28,10 +28,10 @@
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_repository_module.html#ansible-collections-ansible-builtin-apt-repository-module
 - name: Add containerd repository
   ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable"
+    repo: >
+      deb [arch={{ ansible_facts['architecture'] }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable
     state: present
-
-
+    update_cache: true
 
 - name: Install containerd
   ansible.builtin.package:
@@ -49,30 +49,36 @@
     mode: '0644'
     backup: true
 
-
-
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/systemd_service_module.html#ansible-collections-ansible-builtin-systemd-service-module
 # Restarting the containerd service to apply the new configuration
 - name: Restart and enable(start when booted) containerd service
   ansible.builtin.systemd:
     name: containerd
-    state: restarted
     enabled: true
     daemon_reload: true
-  register: containerd_status
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
 - name: Wait for containerd to become active
-  ansible.builtin.command: systemctl is-active containerd
+  ansible.builtin.command: systemctl is-active --quiet containerd
   register: containerd_check
   retries: 5
   delay: 2
-  until: containerd_check.stdout == "active"
+  until: containerd_check.rc == 0
+  changed_when: false
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/assert_module.html#ansible-collections-ansible-builtin-assert-module
 - name: Assert containerd is active and running
   ansible.builtin.assert:
     that:
-      - containerd_check.stdout == "active"
+    - containerd_check.rc == 0
     fail_msg: "Containerd is not running!"
     success_msg: "Containerd is active and running."
+
+# --------------------
+# Handlers
+# --------------------
+- name: Restart containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+    daemon_reload: true
