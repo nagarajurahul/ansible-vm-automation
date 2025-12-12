@@ -2,7 +2,9 @@
 # Apply CNI plugin for networking (Calico)
 # https://docs.tigera.io/calico/latest/getting-started/kubernetes/quickstart
 
-# Prerequisite
+# -----------------------------------------------------------------------------
+# Ensure CNI directory exists
+# -----------------------------------------------------------------------------
 - name: Ensure /etc/cni/net.d exists
   ansible.builtin.file:
     path: /etc/cni/net.d
@@ -10,7 +12,9 @@
     mode: "0755"
   when: "'masters' in group_names"
 
-# Runs only once per cluster
+# -----------------------------------------------------------------------------
+# Install Tigera operator (CRDs + controller)
+# -----------------------------------------------------------------------------
 - name: Install Calico Tigera Operator
   ansible.builtin.command: >
     kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.2/manifests/tigera-operator.yaml
@@ -19,8 +23,8 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   when: "'masters' in group_names"
-  become_user: "{{ ansible_user }}"
   register: calico_operator
+  become_user: "{{ ansible_user }}"
 
 - name: Mark Calico operator installed
   ansible.builtin.file:
@@ -36,6 +40,34 @@
     timeout: 60
   when: calico_operator.changed
 
+# -----------------------------------------------------------------------------
+# Wait for Calico CRDs to be created (CRITICAL)
+# -----------------------------------------------------------------------------
+- name: Wait for Calico CRD - installations.operator.tigera.io
+  ansible.builtin.command: kubectl get crd installations.operator.tigera.io
+  register: crd_check
+  retries: 30
+  delay: 4
+  until: crd_check.rc == 0
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
+
+- name: Wait for Calico CRD - ippools.crd.projectcalico.org
+  ansible.builtin.command: kubectl get crd ippools.crd.projectcalico.org
+  register: crd_ippool_check
+  retries: 30
+  delay: 4
+  until: crd_ippool_check.rc == 0
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
+
+# -----------------------------------------------------------------------------
+# Apply custom resources AFTER CRDs exist
+# -----------------------------------------------------------------------------
 - name: Install Calico Custom Resources
   ansible.builtin.command: >
     kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.31.2/manifests/custom-resources.yaml
@@ -44,14 +76,27 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   when: "'masters' in group_names"
-  become_user: "{{ ansible_user }}"
   register: calico_crs
+  become_user: "{{ ansible_user }}"
 
 - name: Mark Calico custom resources installed
   ansible.builtin.file:
     path: /etc/cni/net.d/calico.resources.installed
     state: touch
   when: calico_crs.changed
+
+# -----------------------------------------------------------------------------
+# Patch IPPool CIDR to match kubeadm (IMPORTANT)
+# -----------------------------------------------------------------------------
+- name: Patch Calico IPPool to match podSubnet (10.244.0.0/16)
+  ansible.builtin.command: >
+    kubectl patch installation default
+    --type merge
+    -p '{"spec":{"calicoNetwork":{"ipPools":[{"cidr":"10.244.0.0/16","encapsulation":"VXLANCrossSubnet","natOutgoing":"Enabled","nodeSelector":"all()"}]}}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
 
 # -------------------------------------------------------------
 # Wait for Pods to initialize
@@ -61,23 +106,44 @@
     timeout: 60
   when: calico_crs.changed
 
-# Wait for all pods to be running
-- name: Wait for all system pods to be Ready
-  ansible.builtin.command: >
-    kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=180s
+# -----------------------------------------------------------------------------
+# Wait for Calico pods
+# -----------------------------------------------------------------------------
+- name: Wait for calico-system namespace to exist
+  ansible.builtin.command: kubectl get ns calico-system
+  register: ns_check
+  retries: 20
+  delay: 3
+  until: ns_check.rc == 0
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   when: "'masters' in group_names"
   become_user: "{{ ansible_user }}"
 
-- name: Wait for workers to be Ready
+- name: Wait for all Calico pods to be Running
   ansible.builtin.shell: |
-    kubectl get nodes --no-headers | grep -v 'control-plane' | grep -c 'Ready'
+    kubectl get pods -n calico-system --no-headers | awk '{print $2}' | grep -vE "^[0-9]+/[0-9]+$" && exit 1 || exit 0
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: calico_ready
+  retries: 30
+  delay: 10
+  until: calico_ready.rc == 0
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
+ 
+
+# -----------------------------------------------------------------------------
+# Wait for cluster nodes to become Ready
+# -----------------------------------------------------------------------------
+- name: Wait for Kubernetes nodes to be Ready
+  ansible.builtin.shell: |
+    kubectl get nodes --no-headers | grep -c " Ready"
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   register: ready_nodes
-  retries: 10
-  delay: 15
-  until: ready_nodes.stdout | int >= groups['workers'] | length
+  retries: 20
+  delay: 10
+  until: ready_nodes.stdout | int == groups['all'] | length
   when: "'masters' in group_names"
   become_user: "{{ ansible_user }}"
