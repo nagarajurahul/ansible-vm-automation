@@ -70,7 +70,7 @@
 - name: Assert containerd is active and running
   ansible.builtin.assert:
     that:
-    - containerd_check.rc == 0
+      - containerd_check.rc == 0
     fail_msg: "Containerd is not running!"
     success_msg: "Containerd is active and running."
 
