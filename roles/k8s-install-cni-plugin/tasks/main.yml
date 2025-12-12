@@ -31,9 +31,9 @@
 # -------------------------------------------------------------
 # Wait for CRDs to initialize
 # -------------------------------------------------------------
-- name: Wait 120 seconds for CRDs to finish initialization
+- name: Wait 60 seconds for CRDs to finish initialization
   ansible.builtin.wait_for:
-    timeout: 120
+    timeout: 60
   when: calico_operator.changed
 
 - name: Install Calico Custom Resources
