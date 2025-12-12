@@ -23,7 +23,7 @@
     version: "{{ gitops_infra_branch }}"
     force: true
 
-- name: Create ArgoCD Application for cert-manager
+- name: Create ArgoCD Application
   kubernetes.core.k8s:
     state: present
     src: "{{ gitops_infra_dest }}/{{ cert_manager_app_manifest }}"
