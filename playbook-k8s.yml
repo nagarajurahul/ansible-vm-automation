@@ -19,10 +19,18 @@
   roles:
     - k8s-install-tools
 
-- name: Final Kubernetes Init & Node Join Setup
+- name: Kubernetes Init & Node Join Setup
   hosts: all
   become: true
   vars_files:
     - vars/k8s.yml
   roles:
     - k8s-initialise-cluster
+
+- name: Install CNI Plugin for Kubernetes
+  hosts: all
+  become: true
+  vars_files:
+    - vars/k8s.yml
+  roles:
+    - k8s-install-cni-plugin
