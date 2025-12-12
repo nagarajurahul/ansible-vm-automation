@@ -5,4 +5,4 @@
   vars_files:
     - vars/k8s.yml
   roles:
-    - secrets
+    - app-secrets
