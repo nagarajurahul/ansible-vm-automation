@@ -35,7 +35,7 @@
 
 - name: Install containerd
   ansible.builtin.package:
-    name: containerd.io
+    name: containerd
     state: present
     update_cache: true
 
