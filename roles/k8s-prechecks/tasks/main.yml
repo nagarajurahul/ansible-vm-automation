@@ -22,8 +22,7 @@
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
 - name: Disable swap
   ansible.builtin.command: swapoff -a
-  args:
-    warn: false
+  when: ansible_facts['swaptotal_mb'] | int > 0
 
 # sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
 # This will comment
@@ -43,8 +42,6 @@
 
 - name: Load br_netfilter kernel module
   ansible.builtin.command: modprobe br_netfilter
-  args:
-    warn: false
 
 - name: Ensure br_netfilter is loaded on every boot
   ansible.builtin.lineinfile:
