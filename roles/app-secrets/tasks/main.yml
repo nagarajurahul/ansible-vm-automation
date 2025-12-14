@@ -27,7 +27,8 @@
     state: present
     kubeconfig: "{{ kubeconfig_path }}"
 
-# Check this
+# Check this, if not needed delete it
+# Usually this is the command used to create docker credentials inside Kubernetes
 # - name: Create Docker registry secrets
 #   ansible.builtin.shell: |
 #     kubectl create secret docker-registry docker-credentials \
