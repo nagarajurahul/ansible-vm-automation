@@ -3,7 +3,7 @@
   hosts: masters
   become: true
   vars_files:
-    - vars/gitops.yml
     - vars/k8s.yml
+    - vars/gitops.yml
   roles:
     - cert-manager
