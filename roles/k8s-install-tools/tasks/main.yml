@@ -55,13 +55,14 @@
   when: "'masters' in group_names"
 
 # Specific to Ubuntu
-- name: Mark Kubernetes packages to hold (control plane)
-  ansible.builtin.apt:
-    name:
+- name: Hold Kubernetes packages (control plane)
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
     - kubelet
     - kubeadm
     - kubectl
-    state: hold
   when: "'masters' in group_names"
 
 # Worker nodes
@@ -76,12 +77,13 @@
   when: "'workers' in group_names"
 
 # Specific to Ubuntu
-- name: Mark Kubernetes packages to hold (worker nodes)
-  ansible.builtin.apt:
-    name:
+- name: Hold Kubernetes packages (worker nodes)
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
     - kubelet
     - kubeadm
-    state: hold
   when: "'workers' in group_names"
 
 # Start kubelet on all nodes
