@@ -5,67 +5,67 @@
 # Update here regularly to match the latest MetalLB version
 - name: Download MetalLB manifests
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
+    url: "https://raw.githubusercontent.com/metallb/metallb/{{ metallb_version }}/config/manifests/metallb-native.yaml"
     dest: /tmp/metallb-install.yaml
+    mode: '0644'
 
-- name: Apply MetalLB YAML manifests
+- name: Install MetalLB
   kubernetes.core.k8s:
-    src: /tmp/metallb-install.yaml
     state: present
+    src: /tmp/metallb-install.yaml
     kubeconfig: "{{ kubeconfig_path }}"
+  register: metallb_install
 
-# Ensure the mandatory MetalLB memberlist secret exists (v0.14+ requirement)
-- name: Ensure MetalLB memberlist secret exists
-  ansible.builtin.shell: |
-    kubectl --kubeconfig {{ kubeconfig_path }} -n metallb-system get secret memberlist ||
-    kubectl --kubeconfig {{ kubeconfig_path }} create secret generic -n metallb-system memberlist \
-      --from-literal=secretkey="$(openssl rand -base64 128)"
-  register: metallb_secret
-  changed_when: "'created' in metallb_secret.stdout"
-  failed_when: metallb_secret.rc not in [0, 1]
+- name: Check if memberlist secret exists
+  kubernetes.core.k8s_info:
+    kind: Secret
+    name: memberlist
+    namespace: "{{ metallb_namespace }}"
+  register: memberlist_secret
 
-
+- name: Create memberlist secret (one-time)
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: memberlist
+        namespace: "{{ metallb_namespace }}"
+      type: Opaque
+      stringData:
+        secretkey: "{{ lookup('password', '/dev/null length=128 chars=ascii_letters') }}"
+  when: memberlist_secret.resources | length == 0
+  no_log: true
 
 # Wait for MetalLB to be ready before applying the configuration
 - name: Wait for MetalLB to stabilize
   ansible.builtin.pause:
     seconds: 60
 
-
-- name: Wait for MetalLB controller pods to be ready
-  ansible.builtin.command: >
-    kubectl --kubeconfig {{ kubeconfig_path }} wait --namespace metallb-system --for=condition=Ready pod -l component=controller --timeout=180s
-  register: metallb_controller_ready
-  until: metallb_controller_ready.rc == 0
-  retries: 3
-  delay: 15
-  changed_when: false
-
-# Wait until MetalLB webhook service is available (ensures webhook reachable)
-- name: Wait for MetalLB webhook service to respond
-  ansible.builtin.shell: |
-    kubectl --kubeconfig {{ kubeconfig_path }} -n metallb-system get svc metallb-webhook-service --no-headers
-  register: webhook_check
-  until: webhook_check.rc == 0
-  retries: 5
-  delay: 10
-  changed_when: false
-
-
-
-- name: Copy MetalLB configuration
-  ansible.builtin.copy:
-    src: metallb-config.yaml
+- name: Render MetalLB address pool config
+  ansible.builtin.template:
+    src: metallb-config.yaml.j2
     dest: /tmp/metallb-config.yaml
+    mode: '0644'
 
-- name: Apply MetalLB configuration
+- name: Apply MetalLB address pool config
   kubernetes.core.k8s:
-    src: /tmp/metallb-config.yaml
     state: present
+    src: /tmp/metallb-config.yaml
     kubeconfig: "{{ kubeconfig_path }}"
 
-
-
+- name: Wait for all MetalLB pods to be Running
+  ansible.builtin.shell: |
+    kubectl get pods -n {{ metallb_namespace }} --no-headers | awk '{print $2}' | grep -vE "^[0-9]+/[0-9]+$" && exit 1 || exit 0
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: metallb_ready
+  retries: 30
+  delay: 10
+  until: metallb_ready.rc == 0
+  when: "'masters' in group_names"
+  become_user: "{{ ansible_user }}"
 
 - name: Get MetalLB pods
   kubernetes.core.k8s_info:
@@ -77,18 +77,3 @@
 - name: Show MetalLB pod names and statuses
   ansible.builtin.debug:
     msg: "{{ metallb_pods.resources | map(attribute='metadata.name') | list }}"
-
-
-# - name: Wait till MetalLB Pods are Running & Ready
-#   kubernetes.core.k8s_info:
-#     kind: Pod
-#     wait: yes
-#     name: "{{ item.metadata.name }}"
-#     namespace: metallb-system
-#     register: pod_status
-#     until: pod_status.resources[0].status.phase == "Running" and
-#             pod_status.resources[0].status.containerStatuses | selectattr('ready', 'equalto', true) | list | length == pod_status.resources[0].status.containerStatuses | length
-#     retries: 30
-#     delay: 5
-#     loop: "{{ metallb_pods.resources }}"
-#     changed_when: false
