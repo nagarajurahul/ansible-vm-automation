@@ -1,11 +1,6 @@
 ---
 # Required for kubernetes modules or collections to run on the host
 - name: Install Kubernetes Python client for Ansible
-  ansible.builtin.pip:
-    name: kubernetes
-    state: latest
-
-# - name: Install kubernetes python package
-#   ansible.builtin.package:
-#     name: python3-kubernetes
-#     state: present
+  ansible.builtin.package:
+    name: python3-kubernetes
+    state: present
