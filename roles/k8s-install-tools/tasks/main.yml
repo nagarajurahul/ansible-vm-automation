@@ -4,9 +4,9 @@
 - name: Install prerequisites for kubernetes
   ansible.builtin.package:
     name:
-    - ca-certificates
-    - curl
-    - gnupg
+      - ca-certificates
+      - curl
+      - gnupg
     state: present
     update_cache: true
 
@@ -47,9 +47,9 @@
 - name: Install Kubernetes components (control plane)
   ansible.builtin.package:
     name:
-    - kubelet
-    - kubeadm
-    - kubectl
+      - kubelet
+      - kubeadm
+      - kubectl
     state: present
     update_cache: true
   when: "'masters' in group_names"
@@ -70,8 +70,8 @@
 - name: Install Kubernetes components (worker nodes)
   ansible.builtin.package:
     name:
-    - kubelet
-    - kubeadm
+      - kubelet
+      - kubeadm
     state: present
     update_cache: true
   when: "'workers' in group_names"
