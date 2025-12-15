@@ -1,4 +1,7 @@
 ---
+# Official documentation
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html#ansible-collections-ansible-builtin-package-module
 - name: Install jq
   ansible.builtin.package:
@@ -12,11 +15,13 @@
     dest: /usr/local/bin/check_kernel_lts.sh
     mode: '0755'
 
+# Check if this is working
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html#ansible-collections-ansible-builtin-command-module
 - name: Run LTS kernel checker script
   ansible.builtin.command: /usr/local/bin/check_kernel_lts.sh
   register: lts_check_output
   changed_when: false
+
 
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html#ansible-collections-ansible-builtin-command-module
@@ -25,7 +30,7 @@
   when: ansible_facts['swaptotal_mb'] | int > 0
 
 # sudo sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
-# This will comment
+# This will comment the swap lines
 # - name: Comment out swap lines in /etc/fstab
 #   ansible.builtin.shell: >
 #     sed -i.bak '/\sswap\s/ s/^/#/' /etc/fstab
@@ -51,7 +56,8 @@
     mode: '0644'
 
 
-
+# Official documentation
+# https://kubernetes.io/docs/setup/production-environment/container-runtimes/
 - name: Set Kubernetes sysctl parameters
   ansible.builtin.copy:
     dest: /etc/sysctl.d/k8s.conf
