@@ -4,6 +4,9 @@
 # Official documentation
 # https://doc.traefik.io/traefik/getting-started/install-traefik/
 
+# This role will basically install Traefik as a pod inside kubernetes, via helm
+# It's exposed as LoadBalancer, so that we can expose our services and paths for access internally
+
 # helm repo add traefik https://traefik.github.io/charts
 - name: Add Traefik Helm repository
   kubernetes.core.helm_repository:
