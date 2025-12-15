@@ -1,5 +1,5 @@
 ---
-- name: Common OS Configuration (kernel checks, modules, etc.)
+- name: Common OS Configuration (kernel checks, modules, sysctl parameters etc.)
   hosts: all
   become: true
   roles:
