@@ -23,12 +23,11 @@
     namespace: argocd
     kubeconfig: "{{ kubeconfig_path }}"
 
+
+
 - name: Wait 1 minute
   ansible.builtin.pause:
     seconds: 60
-
-
-
 
 - name: Wait for all ArgoCD pods to be Running
   ansible.builtin.shell: |
@@ -50,6 +49,7 @@
     dest: /tmp/install-argocd-cli.sh
     mode: "0755"
 
+# Make it idempotent here
 - name: Run script to install ArgoCD CLI
   ansible.builtin.command: /tmp/install-argocd-cli.sh
   register: argocd_cli_install_output
