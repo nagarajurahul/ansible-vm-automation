@@ -1,4 +1,11 @@
 ---
+# Never do this in production
+# Because in production, we never store credentials as static files
+# Even if necessary, encrypt your etcd using a key
+# Best case scenario
+# Use AWS Secrets Manager, Azure Key Vault, or Hashicorp Vault as secrets store
+# And use ESO or Vault Injector inside Kubernete
+
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
 - name: Create ArgoCD HTTPS secret for pulling manifests
   kubernetes.core.k8s:
