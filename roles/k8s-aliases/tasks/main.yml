@@ -16,6 +16,7 @@
 #   become_user: "{{ ansible_user }}"}
 
 # Idempotency: Ensure the aliases file is sourced in .bashrc exactly once
+# Because above task can add the source commands multiple times
 - name: Ensure aliases file is sourced in user's .bashrc
   ansible.builtin.lineinfile:
     path: "/home/{{ ansible_user }}/.bashrc"
