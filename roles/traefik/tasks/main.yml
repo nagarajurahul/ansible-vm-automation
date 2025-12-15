@@ -1,6 +1,9 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/kubernetes/core/index.html
 
+# Official documentation
+# https://doc.traefik.io/traefik/getting-started/install-traefik/
+
 # helm repo add traefik https://traefik.github.io/charts
 - name: Add Traefik Helm repository
   kubernetes.core.helm_repository:
@@ -8,18 +11,26 @@
     repo_url: https://traefik.github.io/charts
 
 # helm repo update
-# kubectl create ns traefik-v2
-# # Install in the namespace "traefik-v2"
-# helm install --namespace=traefik-v2 \
+# kubectl create ns traefik
+# # Install in the namespace "traefik"
+# helm install --namespace=traefik \
 #     traefik traefik/traefik
-- name: Deploy latest version of Traefik chart inside traefik namespace (and create it)
-  kubernetes.core.helm:
-    name: traefik
-    chart_ref: traefik/traefik
-    release_namespace: traefik
-    create_namespace: true
-    update_repo_cache: true
-    kubeconfig: "{{ kubeconfig_path }}"
-    values:
-      service:
-        type: LoadBalancer
+
+# - name: Deploy latest version of Traefik chart inside traefik namespace (and create it)
+#   kubernetes.core.helm:
+#     name: traefik
+#     chart_ref: traefik/traefik
+#     release_namespace: traefik
+#     create_namespace: true
+#     update_repo_cache: true
+#     kubeconfig: "{{ kubeconfig_path }}"
+#     values:
+#       service:
+#         type: LoadBalancer
+
+# Update this to command, as kubernetes.core.helm is not upgraded to support latest version of Helm, 4.0.4 and upwards not supported as of Dec 2025
+- name: Install Traefik with Helm CLI
+  ansible.builtin.command: >
+    helm upgrade --install traefik traefik/traefik --namespace traefik --create-namespace --set service.type=LoadBalancer
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
