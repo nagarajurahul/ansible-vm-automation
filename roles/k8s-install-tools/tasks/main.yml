@@ -42,6 +42,8 @@
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/ /"
     state: present
 
+
+
 # Master nodes
 
 - name: Install Kubernetes components (control plane)
@@ -85,6 +87,8 @@
     - kubelet
     - kubeadm
   when: "'workers' in group_names"
+
+
 
 # Start kubelet on all nodes
 # Kindly check and verify
