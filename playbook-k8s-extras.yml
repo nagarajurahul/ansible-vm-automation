@@ -14,5 +14,8 @@
 - name: Install Helm (on K8s Master nodes)
   hosts: masters
   become: true
+  vars_files:
+    - vars/helm.yml
   roles:
     - helm
+
