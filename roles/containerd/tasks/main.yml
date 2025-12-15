@@ -1,4 +1,8 @@
 ---
+# https://kubernetes.io/docs/setup/production-environment/container-runtimes/
+# https://github.com/containerd/containerd/blob/main/docs/getting-started.md
+# https://docs.docker.com/engine/install/ubuntu/
+
 - name: Install pre-requisites for containerd
   ansible.builtin.package:
     name:
@@ -39,6 +43,9 @@
     state: present
     update_cache: true
 
+
+
+
 - name: Ensure /etc/containerd directory exists
   ansible.builtin.file:
     path: /etc/containerd
@@ -48,7 +55,7 @@
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html#ansible-collections-ansible-builtin-copy-module
 - name: Create containerd configuration file
   ansible.builtin.copy:
-    src: files/containerd_config.toml
+    src: files/config.toml
     dest: /etc/containerd/config.toml
     owner: root
     group: root
@@ -80,6 +87,7 @@
     fail_msg: "Containerd is not running!"
     success_msg: "Containerd is active and running."
 
+# Check which task is calling this
 # --------------------
 # Handlers
 # --------------------

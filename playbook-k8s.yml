@@ -5,7 +5,7 @@
   roles:
     - k8s-prechecks
 
-- name: Install and Configure Container Runtime (containerd)
+- name: Install and Configure Container Runtime
   hosts: all
   become: true
   roles:
