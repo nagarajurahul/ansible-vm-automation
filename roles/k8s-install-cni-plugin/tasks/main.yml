@@ -1,6 +1,11 @@
 ---
-# Apply CNI plugin for networking (Calico)
+# Apply CNI plugin for networking
+
+# Here, we install Calico as CNI
 # https://docs.tigera.io/calico/latest/getting-started/kubernetes/quickstart
+
+# Check this role and make it idempotent
+# Check this role and make variables or parameters
 
 # -----------------------------------------------------------------------------
 # Ensure CNI directory exists
