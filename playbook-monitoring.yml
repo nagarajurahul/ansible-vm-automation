@@ -1,0 +1,9 @@
+---
+- name: Install monitoring using ArgoCD
+  hosts: masters
+  become: true
+  vars_files:
+    - vars/k8s.yml
+    - vars/gitops.yml
+  roles:
+    - monitoring
