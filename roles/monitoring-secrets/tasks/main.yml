@@ -14,8 +14,16 @@
     group: root
     mode: '0644'
 
+- name: Find monitoring manifest files on remote host
+  ansible.builtin.find:
+    paths: /tmp/monitoring
+    patterns: "*.yaml"
+    file_type: file
+  register: monitoring_manifests
+
 - name: Apply K8s Monitoring Secrets YAML manifests
   kubernetes.core.k8s:
     state: present
-    src: /tmp/monitoring
+    src: "{{ item.path }}"
     kubeconfig: "{{ kubeconfig_path }}"
+  loop: "{{ monitoring_manifests.files }}"
