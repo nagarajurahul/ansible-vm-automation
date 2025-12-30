@@ -2,6 +2,7 @@
 # Official documentation
 # https://helm.sh/docs/intro/install
 
+# Check this and fix warnings
 # Helpers to set helm architecture
 - name: Set Helm architecture dynamically
   ansible.builtin.set_fact:

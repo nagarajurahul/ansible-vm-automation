@@ -3,6 +3,7 @@
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 
 # Pre-req for K8s cluster initialization
+# Check this, what if we have multiple control plane nodes?
 - name: Set control plane IP dynamically
   ansible.builtin.set_fact:
     control_plane_ip: "{{ ansible_host }}"
