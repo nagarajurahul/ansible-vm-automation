@@ -34,7 +34,7 @@ print_banner "Installing ArgoCD"
 ansible-playbook -i k8s.ini playbook-argocd.yml
 sleep $PAUSE_BETWEEN
 
-print_banner "Install secrets prior to deploying ArgoCD application and GoFlights application"
+print_banner "Install secrets prior to deploying ArgoCD application, Monitoring stack, GoFlights and quotes-app-nodejs application"
 ansible-playbook -i k8s.ini playbook-secrets.yml
 sleep $PAUSE_BETWEEN
 
