@@ -1,0 +1,21 @@
+---
+# Never do this in production
+# Because in production, we never store credentials as static files
+# Even if necessary, encrypt your etcd using a key
+# Best case scenario
+# Use AWS Secrets Manager, Azure Key Vault, or Hashicorp Vault as secrets store
+# And use ESO or Vault Injector inside Kubernetes
+
+- name: Copy K8s Monitoring manifests
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/vars/monitoring/"
+    dest: /tmp/monitoring/
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Apply K8s Monitoring Secrets YAML manifests
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/monitoring
+    kubeconfig: "{{ kubeconfig_path }}"
