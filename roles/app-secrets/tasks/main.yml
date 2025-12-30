@@ -36,15 +36,15 @@
 
 - name: Copy Docker credentials
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/vars/docker-secrets.yml"
-    dest: /tmp/docker-secrets.yml
+    src: "{{ playbook_dir }}/vars/k8s-docker-secrets.yml"
+    dest: /tmp/k8s-docker-secrets.yml
     owner: root
     group: root
     mode: '0644'
 
 - name: Apply K8s GoFlights Secrets YAML manifests
   kubernetes.core.k8s:
-    src: /tmp/docker-secrets.yml
+    src: /tmp/k8s-docker-secrets.yml
     state: present
     kubeconfig: "{{ kubeconfig_path }}"
 
