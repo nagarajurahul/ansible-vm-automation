@@ -20,6 +20,20 @@
     state: present
     kubeconfig: "{{ kubeconfig_path }}"
 
+- name: Copy K8s secrets for quotes-app-nodejs
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/vars/k8s-quotes-app-nodejs-secrets.yml"
+    dest: /tmp/k8s-quotes-app-nodejs-secrets.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Apply K8s quotes-app-nodejs Secrets YAML manifests
+  kubernetes.core.k8s:
+    src: /tmp/k8s-quotes-app-nodejs-secrets.yml
+    state: present
+    kubeconfig: "{{ kubeconfig_path }}"
+
 - name: Copy Docker credentials
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/vars/docker-secrets.yml"
