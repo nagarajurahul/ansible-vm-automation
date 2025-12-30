@@ -57,6 +57,10 @@ sleep 60
 
 print_banner "Deploying GoFlights Appication with ArgoCD"
 ansible-playbook -i k8s.ini playbook-goflights.yml
+sleep 60
+
+print_banner "Deploying quotes-app-nodejs Appication with ArgoCD"
+ansible-playbook -i k8s.ini playbook-argocd-quotes-app-nodejs.yml
 
 echo
 echo "✅ All playbooks executed successfully."
