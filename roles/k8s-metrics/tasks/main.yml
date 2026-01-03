@@ -1,0 +1,13 @@
+---
+- name: Clone gitops-infra repository
+  ansible.builtin.git:
+    repo: "{{ gitops_infra_repo_url }}"
+    dest: "{{ gitops_infra_dest }}"
+    version: "{{ gitops_infra_branch }}"
+    force: true
+
+- name: Create ArgoCD Application
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ gitops_infra_dest }}/{{ k8s_metrics_app_manifest }}"
+    kubeconfig: "{{ kubeconfig_path }}"
