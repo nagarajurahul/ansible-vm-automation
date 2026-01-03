@@ -1,6 +1,7 @@
 ---
 # Official documentation
 # https://helm.sh/docs/intro/install
+# https://github.com/helm/helm/releases
 
 # Check this and fix warnings
 # Helpers to set helm architecture
