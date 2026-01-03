@@ -38,6 +38,10 @@ print_banner "Install secrets prior to deploying ArgoCD application, Monitoring 
 ansible-playbook -i k8s.ini playbook-secrets.yml
 sleep $PAUSE_BETWEEN
 
+print_banner "Installing K8s Metrics"
+ansible-playbook -i k8s.ini playbook-k8s-metrics.yml
+sleep $PAUSE_BETWEEN
+
 print_banner "Installing Monitoring Stack"
 ansible-playbook -i k8s.ini playbook-monitoring.yml
 sleep $PAUSE_BETWEEN
