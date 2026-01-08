@@ -38,11 +38,6 @@ print_banner "Install secrets prior to deploying ArgoCD application, Monitoring 
 ansible-playbook -i k8s.ini playbook-secrets.yml
 sleep $PAUSE_BETWEEN
 
-print_banner "Deploying SQL with ArgoCD"
-ansible-playbook -i k8s.ini playbook-sql.yml
-sleep 60
-# Need extra time for SQL to boot up
-
 print_banner "Deploying GoFlights Appication with ArgoCD"
 ansible-playbook -i k8s.ini playbook-goflights.yml
 sleep $PAUSE_BETWEEN
