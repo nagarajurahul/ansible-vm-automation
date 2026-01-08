@@ -38,37 +38,5 @@ print_banner "Install secrets prior to deploying ArgoCD application, Monitoring 
 ansible-playbook -i k8s.ini playbook-secrets.yml
 sleep $PAUSE_BETWEEN
 
-print_banner "Installing K8s Metrics"
-ansible-playbook -i k8s.ini playbook-k8s-metrics.yml
-sleep $PAUSE_BETWEEN
-
-print_banner "Installing Monitoring Stack"
-ansible-playbook -i k8s.ini playbook-monitoring.yml
-sleep $PAUSE_BETWEEN
-
-print_banner "Installing Cert-Manager"
-ansible-playbook -i k8s.ini playbook-cert-manager.yml
-sleep $PAUSE_BETWEEN
-
-print_banner "Deploying CI/CD App with ArgoCD"
-ansible-playbook -i k8s.ini playbook-argocd-ci-cd-app.yml
-sleep $PAUSE_BETWEEN
-
-print_banner "Deploying SQL with ArgoCD"
-ansible-playbook -i k8s.ini playbook-sql.yml
-sleep 60
-# Need extra time for SQL to boot up
-
-print_banner "Deploying GoFlights Appication with ArgoCD"
-ansible-playbook -i k8s.ini playbook-goflights.yml
-sleep $PAUSE_BETWEEN
-
-print_banner "Deploying quotes-app-nodejs Appication with ArgoCD"
-ansible-playbook -i k8s.ini playbook-argocd-quotes-app-nodejs.yml
-sleep $PAUSE_BETWEEN
-
-print_banner "Installing Gatekeeper"
-ansible-playbook -i k8s.ini playbook-gatekeeper.yml
-
 echo
 echo "✅ All playbooks executed successfully."
