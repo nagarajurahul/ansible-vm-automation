@@ -38,8 +38,5 @@ print_banner "Install secrets prior to deploying ArgoCD application, Monitoring 
 ansible-playbook -i k8s.ini playbook-secrets.yml
 sleep $PAUSE_BETWEEN
 
-print_banner "Installing Gatekeeper"
-ansible-playbook -i k8s.ini playbook-gatekeeper.yml
-
 echo
 echo "✅ All playbooks executed successfully."
