@@ -1,9 +1,0 @@
----
-- name: Deploy CI/CD Application with ArgoCD
-  hosts: masters
-  become: true
-  vars_files:
-    - vars/k8s.yml
-    - vars/gitops.yml
-  roles:
-    - argocd-deploy-ci-cd-app
