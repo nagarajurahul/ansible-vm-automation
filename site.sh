@@ -38,10 +38,6 @@ print_banner "Install secrets prior to deploying ArgoCD application, Monitoring 
 ansible-playbook -i k8s.ini playbook-secrets.yml
 sleep $PAUSE_BETWEEN
 
-print_banner "Installing Cert-Manager"
-ansible-playbook -i k8s.ini playbook-cert-manager.yml
-sleep $PAUSE_BETWEEN
-
 print_banner "Deploying CI/CD App with ArgoCD"
 ansible-playbook -i k8s.ini playbook-argocd-ci-cd-app.yml
 sleep $PAUSE_BETWEEN
