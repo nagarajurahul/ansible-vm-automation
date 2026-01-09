@@ -14,6 +14,14 @@
     state: present
     kubeconfig: "{{ kubeconfig_path }}"
 
+- name: Create a Namespace for ci-cd-app
+  kubernetes.core.k8s:
+    name: ci-cd-app
+    api_version: v1
+    kind: Namespace
+    state: present
+    kubeconfig: "{{ kubeconfig_path }}"
+
 - name: Copy K8s Monitoring manifests
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/vars/monitoring/"
