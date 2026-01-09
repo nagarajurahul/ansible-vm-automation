@@ -38,5 +38,8 @@ print_banner "Install secrets prior to deploying ArgoCD application, Monitoring 
 ansible-playbook -i k8s.ini playbook-secrets.yml
 sleep $PAUSE_BETWEEN
 
+print_banner "Installing Bootstrap Application for ArgoCD Apps"
+ansible-playbook -i k8s.ini playbook-bootstrap-argocd-apps.yml
+
 echo
 echo "✅ All playbooks executed successfully."
